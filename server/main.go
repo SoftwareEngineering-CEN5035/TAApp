@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+    //"ta-manager-api/repository"
 
 	"firebase.google.com/go"
 	"github.com/joho/godotenv"
@@ -35,6 +36,8 @@ func main() {
         log.Fatalf("error initializing Firestore client: %v", err)
     }
     defer client.Close()
+
+    // userRepo := repository.NewRepository(client)
 
     e := echo.New()
     e.GET("/", func(c echo.Context) error {
