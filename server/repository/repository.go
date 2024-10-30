@@ -42,5 +42,19 @@ func (r *Repository) CreateForm(ctx context.Context, form *models.Form) error {
     return nil
 }
 
+func (r *Repository) FetchUserByUID(ctx context.Context, uid string) (*models.User, error) {
+	iter := r.client.Collection("users").Where("id", "==", uid).Limit(1).Documents(ctx)
+	doc, err := iter.Next()
+	if err != nil {
+		return nil, err
+	}
+
+	var user models.User
+	if err := doc.DataTo(&user); err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
 
 
