@@ -48,13 +48,22 @@ func (r *Repository) FetchUserByUID(ctx context.Context, uid string) (*models.Us
 	if err != nil {
 		return nil, err
 	}
-
 	var user models.User
 	if err := doc.DataTo(&user); err != nil {
 		return nil, err
 	}
 
 	return &user, nil
+}
+
+func (r *Repository) UpdateUser(ctx context.Context, user *models.User) error {
+    _, err := r.client.Collection("users").Doc(user.ID).Set(ctx, map[string]interface{}{
+		"name": user.Name,
+		"email": user.Email,
+		"profilePicture": user.ProfilePicture,
+        "role": user.Role,
+    }, firestore.MergeAll)
+    return err
 }
 
 
