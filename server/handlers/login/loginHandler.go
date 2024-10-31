@@ -87,3 +87,24 @@ func UpdateUserRoleHandler(c echo.Context, repo *repository.Repository, authClie
         "data": "User role updated successfully",
     })
 }
+
+func Login(c echo.Context, authClient *auth.Client) error {
+	type LoginRequest struct {
+		UserID string `json:"ID"`
+	}
+	var req LoginRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request, user id does not exist"})
+	}
+
+	ctx := context.Background()
+	token, err := authClient.CustomToken(ctx, req.UserID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to generate token"})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"token": token,
+	})
+
+}

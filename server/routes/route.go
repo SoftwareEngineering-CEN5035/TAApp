@@ -16,6 +16,9 @@ func RegisterRoutes(e *echo.Echo, repo *repository.Repository, authClient *auth.
 	e.POST("/CreateAccount", func(c echo.Context) error {
 		return login.CreateAccount(c, repo, authClient)
 	})
+	e.PATCH("/Login", func(c echo.Context) error {
+		return login.Login(c, authClient)
+	})
 	e.PATCH("/UpdateUserRole", func(c echo.Context) error {
 		return login.UpdateUserRoleHandler(c, repo, authClient)
 	})
