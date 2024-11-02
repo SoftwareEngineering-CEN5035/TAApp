@@ -3,13 +3,27 @@ package login
 import (
 	"context"
 	"net/http"
-	"ta-manager-api/handlers/department"
 	"ta-manager-api/models"
 	"ta-manager-api/repository"
 
 	"firebase.google.com/go/auth"
 	"github.com/labstack/echo/v4"
 )
+
+func AuthUser(ctx context.Context, tokenString string, repo *repository.Repository, authClient *auth.Client) (bool, string) {
+    token, err := authClient.VerifyIDToken(ctx, tokenString)
+    if err != nil {
+        return false, "Token invalid"
+    }
+
+    uid := token.UID
+	_, err = repo.FetchUserByUID(context.Background(), uid)
+	if err != nil {
+		return false, "User not found"
+	}
+
+    return true, "Success"
+}
 
 /*Expects a request with the following user object parameter -
 {
@@ -47,45 +61,6 @@ func CreateAccount(c echo.Context, repo *repository.Repository, authClient *auth
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"data": existingUser,
 	})	
-}
-
-// Expects request in the form of UpdateRoleRequest
-func UpdateUserRoleHandler(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
-    ctx := context.Background()
-    type UpdateRoleRequest struct {
-        UserID string `json:"ID"`
-        Role   string `json:"Role"`
-    }
-
-	authHeader := c.Request().Header.Get("Authorization")
-    if authHeader == "" {
-        return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
-    }
-    tokenString := authHeader[len("Bearer "):] 
-    isAuth, authMessage := department.AuthUser(ctx, tokenString, repo, authClient)
-
-    if(!isAuth){
-        return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
-    }
-
-    var updateReq UpdateRoleRequest
-    if err := c.Bind(&updateReq); err != nil {
-        return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request data"})
-    }
-
-    user, err := repo.FetchUserByUID(ctx, updateReq.UserID)
-    if err != nil {
-        return c.JSON(http.StatusInternalServerError, map[string]string{"error": "User not found"})
-    }
-
-    user.Role = updateReq.Role
-    if err := repo.UpdateUser(ctx, user); err != nil {
-        return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to update user role"})
-    }
-
-    return c.JSON(http.StatusOK, map[string]interface{}{
-        "data": "User role updated successfully",
-    })
 }
 
 func Login(c echo.Context, authClient *auth.Client) error {

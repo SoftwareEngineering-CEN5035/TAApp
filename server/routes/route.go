@@ -19,7 +19,19 @@ func RegisterRoutes(e *echo.Echo, repo *repository.Repository, authClient *auth.
 	e.PATCH("/Login", func(c echo.Context) error {
 		return login.Login(c, authClient)
 	})
-	e.PATCH("/UpdateUserRole", func(c echo.Context) error {
-		return login.UpdateUserRoleHandler(c, repo, authClient)
+	e.DELETE("/courses/:id", func(c echo.Context) error {
+		return department.DeleteCourse(c, repo, authClient)
+	})
+	e.PATCH("/removeTaFromCourse", func(c echo.Context) error {
+		return department.RemoveTAFromCourse(c, repo, authClient)
+	})
+	e.PATCH("/approveTaForCourse", func(c echo.Context) error {
+		return department.ApproveTaForCourse(c, repo, authClient)
+	})
+	e.GET("/forms", func(c echo.Context) error {
+		return department.GetForms(c, repo, authClient)
+	})
+	e.GET("/forms/:id", func(c echo.Context) error {
+		return department.GetFormById(c, repo, authClient)
 	})
 }
