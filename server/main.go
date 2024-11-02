@@ -6,7 +6,9 @@ import (
 	"log"
 	"net/http"
 	"os"
-    //"ta-manager-api/repository"
+
+	"ta-manager-api/repository"
+	"ta-manager-api/routes"
 
 	"firebase.google.com/go"
 	"github.com/joho/godotenv"
@@ -37,9 +39,17 @@ func main() {
     }
     defer client.Close()
 
-    // userRepo := repository.NewRepository(client)
+    // Initialize Firebase Auth client
+	authClient, err := app.Auth(ctx)
+	if err != nil {
+		log.Fatalf("Error initializing Firebase Auth client: %v", err)
+	}
 
     e := echo.New()
+
+    repo := repository.NewRepository(client)
+    routes.RegisterRoutes(e, repo, authClient)
+
     e.GET("/", func(c echo.Context) error {
         return c.String(http.StatusOK, "Firebase and Echo are working!")
     })
