@@ -5,6 +5,7 @@ import (
 	"firebase.google.com/go/auth"
     "github.com/labstack/echo/v4"
     "ta-manager-api/handlers/department"
+	"ta-manager-api/handlers/course"
 	"ta-manager-api/handlers/login"
     "ta-manager-api/repository"
 )
@@ -30,6 +31,9 @@ func RegisterRoutes(e *echo.Echo, repo *repository.Repository, authClient *auth.
 	})
 	e.GET("/forms", func(c echo.Context) error {
 		return department.GetForms(c, repo, authClient)
+	})
+	e.GET("/courses", func(c echo.Context) error {
+		return course.GetCoursesByTA(c, repo, authClient)
 	})
 	e.GET("/forms/:id", func(c echo.Context) error {
 		return department.GetFormById(c, repo, authClient)

@@ -165,3 +165,31 @@ func (r *Repository) AddTaToCourse(ctx context.Context, courseID, taID string) e
     })
     return err
 }
+
+func (r *Repository) FetchCoursesByTaID(ctx context.Context, taID string) ([]models.Course, error) {
+    var courses []models.Course
+
+    query := r.client.Collection("courses").Where("taList", "array-contains", taID)
+    iter := query.Documents(ctx)
+
+    defer iter.Stop()
+
+    for {
+        doc, err := iter.Next()
+        if err == iterator.Done {
+            break 
+        }
+        if err != nil {
+            return nil, err 
+        }
+
+        var course models.Course
+        if err := doc.DataTo(&course); err != nil {
+            return nil, err 
+        }
+        course.ID = doc.Ref.ID
+        courses = append(courses, course)
+    }
+
+    return courses, nil 
+}
