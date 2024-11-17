@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"ta-manager-api/models"
 
@@ -56,6 +57,21 @@ func (r *Repository) FetchUserByUID(ctx context.Context, uid string) (*models.Us
 	}
 
 	return &user, nil
+}
+
+func (r *Repository) CheckUserExists(ctx context.Context, uid string) error {
+	iter := r.client.Collection("users").Where("id", "==", uid).Limit(1).Documents(ctx)
+	_, err := iter.Next()
+
+	if err == iterator.Done {
+		return nil
+	}
+
+	if err != nil {
+		return err
+	}
+
+	return fmt.Errorf("user with ID %s already exists", uid)
 }
 
 func (r *Repository) UpdateUser(ctx context.Context, user *models.User) error {
