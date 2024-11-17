@@ -94,6 +94,7 @@ func Login(c echo.Context, repo *repository.Repository, authClient *auth.Client)
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"token": token,
+		"id": user.ID,
 	})
 }
 
@@ -135,5 +136,6 @@ func GoogleLogin(c echo.Context, repo *repository.Repository, authClient *auth.C
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"token": customToken,
+		"id": user.ID,
 	})
 }

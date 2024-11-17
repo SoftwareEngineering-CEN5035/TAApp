@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth, provider, signInWithPopup } from '../firebase';
+import { auth, provider, signInWithPopup } from './_lib/firebase';
 
 const AuthPage = () => {
   const [isRegister, setIsRegister] = useState(false);
@@ -11,7 +11,6 @@ const AuthPage = () => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [role, setRole] = useState('');
-  const [profilePicture, setProfilePicture] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const router = useRouter();
@@ -58,6 +57,7 @@ const AuthPage = () => {
         setSuccess(true);
         setTimeout(() => {
           localStorage.setItem('authToken', data.token);
+          localStorage.setItem('userId', data.id);
           router.push('/dashboard');
         }, 2000);
       }
@@ -93,6 +93,7 @@ const AuthPage = () => {
       }
 
       localStorage.setItem('authToken', data.token);
+      localStorage.setItem('userId', data.id);
       setSuccess(true);
       setTimeout(() => {
         router.push('/dashboard');
@@ -147,22 +148,18 @@ const AuthPage = () => {
                 <>
                   <div className="form-group">
                     <label htmlFor="role">Role:</label>
-                    <input
-                      id="role"
-                      type="text"
-                      value={role}
-                      onChange={(e) => setRole(e.target.value)}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="profilePicture">Profile Picture URL:</label>
-                    <input
-                      id="profilePicture"
-                      type="url"
-                      value={profilePicture}
-                      onChange={(e) => setProfilePicture(e.target.value)}
-                      placeholder="https://example.com/profile-pic.jpg"
-                    />
+                    <select
+                    id="role"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                  >
+                    <option value="" disabled>
+                      Select a role
+                    </option>
+                    <option value="Department Staff">Department Staff</option>
+                    <option value="Instructor">Instructor</option>
+                    <option value="TA">Teaching Assistant (TA)</option>
+                  </select>
                   </div>
                 </>
               )}
