@@ -42,25 +42,18 @@ func CreateAccount(c echo.Context, repo *repository.Repository, authClient *auth
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request data"})
 	}
 
-	existingUser, err := repo.FetchUserByUID(ctx, user.ID)
+	err := repo.CheckUserExists(ctx, user.ID)
 	if err != nil && err.Error() != "user not found" {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Error checking user existence"})
 	}
 
-	if existingUser == nil {
-		if err := repo.CreateUser(ctx, &user); err != nil {
-			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to create new user"})
-		}
-		existingUser = &user
-	}else{
-		return c.JSON(http.StatusOK, map[string]interface{}{
-			"data": "User already exists",
-		})	
+	if err := repo.CreateUser(ctx, &user); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to create new user"})
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"data": existingUser,
-	})	
+	return c.JSON(http.StatusCreated, map[string]interface{}{
+		"data": user,
+	})
 }
 
 func Login(c echo.Context, authClient *auth.Client) error {
