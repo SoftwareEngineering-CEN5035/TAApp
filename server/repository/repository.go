@@ -18,6 +18,20 @@ func NewRepository(client *firestore.Client) *Repository {
     return &Repository{client: client}
 }
 
+func (r *Repository) FetchUserByEmail(ctx context.Context, email string) (*models.User, error) {
+    iter := r.client.Collection("users").Where("email", "==", email).Limit(1).Documents(ctx)
+    doc, err := iter.Next()
+    if err != nil {
+        return nil, err
+    }
+    var user models.User
+    if err := doc.DataTo(&user); err != nil {
+        return nil, err
+    }
+
+    return &user, nil
+}
+
 func (r *Repository) CreateUser(ctx context.Context, user *models.User) error {
     _, _, err := r.client.Collection("users").Add(ctx, user)
     if err != nil {

@@ -8,41 +8,51 @@ import (
 
 	"firebase.google.com/go/auth"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func AuthUser(ctx context.Context, tokenString string, repo *repository.Repository, authClient *auth.Client) (bool, string) {
-    token, err := authClient.VerifyIDToken(ctx, tokenString)
-    if err != nil {
-        return false, "Token invalid"
-    }
+	token, err := authClient.VerifyIDToken(ctx, tokenString)
+	if err != nil {
+		return false, "Token invalid"
+	}
 
-    uid := token.UID
+	uid := token.UID
 	_, err = repo.FetchUserByUID(context.Background(), uid)
 	if err != nil {
 		return false, "User not found"
 	}
 
-    return true, "Success"
+	return true, "Success"
 }
 
-/*Expects a request with the following user object parameter -
-{
-	ID: "string"
-	Name: "string"
-	Email: "string"
-	Role: "",
-	ProfilePicture: "Default (Will probably be a placeholder like the youtuber pfp)"
-}
+/*
+Expects a request with the following user object parameter -
+
+	{
+		ID: "string"
+		Name: "string"
+		Email: "string"
+		Role: "",
+		ProfilePicture: "Default (Will probably be a placeholder like the youtuber pfp)"
+	}
 */
 func CreateAccount(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
 	ctx := context.Background()
-    var user models.User
+	var user models.User
 
 	if err := c.Bind(&user); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request data"})
 	}
 
-	err := repo.CheckUserExists(ctx, user.ID)
+	// Hash the password before storing it
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to hash password"})
+	}
+	user.Password = string(hashedPassword)
+
+	err = repo.CheckUserExists(ctx, user.ID)
 	if err != nil && err.Error() != "user not found" {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Error checking user existence"})
 	}
@@ -56,17 +66,28 @@ func CreateAccount(c echo.Context, repo *repository.Repository, authClient *auth
 	})
 }
 
-func Login(c echo.Context, authClient *auth.Client) error {
+func Login(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
 	type LoginRequest struct {
-		UserID string `json:"ID"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
 	}
 	var req LoginRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request, user id does not exist"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request data"})
 	}
 
 	ctx := context.Background()
-	token, err := authClient.CustomToken(ctx, req.UserID)
+	user, err := repo.FetchUserByEmail(ctx, req.Email)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid email or password"})
+	}
+
+	// Compare the hashed password with the provided password
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid email or password"})
+	}
+
+	token, err := authClient.CustomToken(ctx, user.ID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to generate token"})
 	}
@@ -74,5 +95,4 @@ func Login(c echo.Context, authClient *auth.Client) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"token": token,
 	})
-
 }

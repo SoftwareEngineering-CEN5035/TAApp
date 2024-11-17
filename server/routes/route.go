@@ -18,7 +18,7 @@ func RegisterRoutes(e *echo.Echo, repo *repository.Repository, authClient *auth.
 		return login.CreateAccount(c, repo, authClient)
 	})
 	e.PATCH("/Login", func(c echo.Context) error {
-		return login.Login(c, authClient)
+		return login.Login(c, repo, authClient)
 	})
 	e.DELETE("/courses/:id", func(c echo.Context) error {
 		return department.DeleteCourse(c, repo, authClient)
