@@ -96,3 +96,44 @@ func Login(c echo.Context, repo *repository.Repository, authClient *auth.Client)
 		"token": token,
 	})
 }
+
+func GoogleLogin(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
+	type GoogleLoginRequest struct {
+		Token string `json:"token"`
+	}
+	var req GoogleLoginRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request data"})
+	}
+
+	ctx := context.Background()
+	token, err := authClient.VerifyIDToken(ctx, req.Token)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid token"})
+	}
+
+	uid := token.UID
+	user, err := repo.FetchUserByUID(ctx, uid)
+	if err != nil {
+		// If user does not exist, create a new user
+		user = &models.User{
+			ID:    uid,
+			Email: token.Claims["email"].(string),
+			Name:  token.Claims["name"].(string),
+			Role:  "user",
+		}
+		if err := repo.CreateUser(ctx, user); err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to create new user"})
+		}
+	}
+
+	// Generate a custom token for the user
+	customToken, err := authClient.CustomToken(ctx, user.ID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to generate token"})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"token": customToken,
+	})
+}
