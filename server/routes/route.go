@@ -2,18 +2,24 @@
 package routes
 
 import (
-	"firebase.google.com/go/auth"
-    "github.com/labstack/echo/v4"
-    "ta-manager-api/handlers/department"
 	"ta-manager-api/handlers/course"
+	"ta-manager-api/handlers/department"
 	"ta-manager-api/handlers/login"
-    "ta-manager-api/repository"
+	"ta-manager-api/handlers/ta"
+	"ta-manager-api/repository"
+
+	"firebase.google.com/go/auth"
+	"github.com/labstack/echo/v4"
 )
 
 func RegisterRoutes(e *echo.Echo, repo *repository.Repository, authClient *auth.Client) {
-    e.POST("/courses", func(c echo.Context) error {
-        return department.CreateCourseHandler(c, repo, authClient)
-    })
+	// Add these to your RegisterRoutes function
+	e.POST("/ta/application", func(c echo.Context) error {
+		return ta.CreateTAApplication(c, repo, authClient)
+	})
+	e.POST("/courses", func(c echo.Context) error {
+		return department.CreateCourseHandler(c, repo, authClient)
+	})
 	e.POST("/CreateAccount", func(c echo.Context) error {
 		return login.CreateAccount(c, repo, authClient)
 	})

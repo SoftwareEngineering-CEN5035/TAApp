@@ -11,52 +11,52 @@ import (
 )
 
 type Repository struct {
-    client *firestore.Client
+	client *firestore.Client
 }
 
 func NewRepository(client *firestore.Client) *Repository {
-    return &Repository{client: client}
+	return &Repository{client: client}
 }
 
 func (r *Repository) FetchUserByEmail(ctx context.Context, email string) (*models.User, error) {
-    iter := r.client.Collection("users").Where("email", "==", email).Limit(1).Documents(ctx)
-    doc, err := iter.Next()
-    if err != nil {
-        return nil, err
-    }
-    var user models.User
-    if err := doc.DataTo(&user); err != nil {
-        return nil, err
-    }
+	iter := r.client.Collection("users").Where("email", "==", email).Limit(1).Documents(ctx)
+	doc, err := iter.Next()
+	if err != nil {
+		return nil, err
+	}
+	var user models.User
+	if err := doc.DataTo(&user); err != nil {
+		return nil, err
+	}
 
-    return &user, nil
+	return &user, nil
 }
 
 func (r *Repository) CreateUser(ctx context.Context, user *models.User) error {
-    _, _, err := r.client.Collection("users").Add(ctx, user)
-    if err != nil {
-        log.Printf("Failed to create user: %v", err)
-        return err
-    }
-    return nil
+	_, _, err := r.client.Collection("users").Add(ctx, user)
+	if err != nil {
+		log.Printf("Failed to create user: %v", err)
+		return err
+	}
+	return nil
 }
 
 func (r *Repository) CreateCourse(ctx context.Context, course *models.Course) error {
-    _, _, err := r.client.Collection("courses").Add(ctx, course)
-    if err != nil {
-        log.Printf("Failed to create course: %v", err)
-        return err
-    }
-    return nil
+	_, _, err := r.client.Collection("courses").Add(ctx, course)
+	if err != nil {
+		log.Printf("Failed to create course: %v", err)
+		return err
+	}
+	return nil
 }
 
 func (r *Repository) CreateForm(ctx context.Context, form *models.Form) error {
-    _, _, err := r.client.Collection("forms").Add(ctx, form)
-    if err != nil {
-        log.Printf("Failed to create form: %v", err)
-        return err
-    }
-    return nil
+	_, _, err := r.client.Collection("forms").Add(ctx, form)
+	if err != nil {
+		log.Printf("Failed to create form: %v", err)
+		return err
+	}
+	return nil
 }
 
 func (r *Repository) FetchUserByUID(ctx context.Context, uid string) (*models.User, error) {
@@ -89,13 +89,13 @@ func (r *Repository) CheckUserExists(ctx context.Context, uid string) error {
 }
 
 func (r *Repository) UpdateUser(ctx context.Context, user *models.User) error {
-    _, err := r.client.Collection("users").Doc(user.ID).Set(ctx, map[string]interface{}{
-		"name": user.Name,
-		"email": user.Email,
+	_, err := r.client.Collection("users").Doc(user.ID).Set(ctx, map[string]interface{}{
+		"name":           user.Name,
+		"email":          user.Email,
 		"profilePicture": user.ProfilePicture,
-        "role": user.Role,
-    }, firestore.MergeAll)
-    return err
+		"role":           user.Role,
+	}, firestore.MergeAll)
+	return err
 }
 
 func (r *Repository) DeleteCourseByID(ctx context.Context, courseID string) error {
@@ -105,7 +105,7 @@ func (r *Repository) DeleteCourseByID(ctx context.Context, courseID string) erro
 
 func (r *Repository) RemoveTAFromCourse(ctx context.Context, courseID string, taID string) error {
 	courseRef := r.client.Collection("courses").Doc(courseID)
-	
+
 	courseSnap, err := courseRef.Get(ctx)
 	if err != nil {
 		log.Printf("Failed to get course: %v", err)
@@ -124,7 +124,7 @@ func (r *Repository) RemoveTAFromCourse(ctx context.Context, courseID string, ta
 			newTaList = append(newTaList, ta)
 		}
 	}
-	
+
 	_, err = courseRef.Update(ctx, []firestore.Update{
 		{Path: "taList", Value: newTaList},
 	})
@@ -138,27 +138,27 @@ func (r *Repository) RemoveTAFromCourse(ctx context.Context, courseID string, ta
 }
 
 func (r *Repository) GetAllForms(ctx context.Context) ([]models.Form, error) {
-    var forms []models.Form
-    iter := r.client.Collection("forms").Documents(ctx)
-    defer iter.Stop() 
-    for {
-        doc, err := iter.Next()
-        if err == iterator.Done {
-            break
-        }
-        if err != nil {
-            log.Printf("Error retrieving forms: %v", err)
-            return nil, err
-        }
-        var form models.Form
-        if err := doc.DataTo(&form); err != nil {
-            log.Printf("Error decoding form data: %v", err)
-            return nil, err
-        }
-        form.ID = doc.Ref.ID
-        forms = append(forms, form)
-    }
-    return forms, nil
+	var forms []models.Form
+	iter := r.client.Collection("forms").Documents(ctx)
+	defer iter.Stop()
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			log.Printf("Error retrieving forms: %v", err)
+			return nil, err
+		}
+		var form models.Form
+		if err := doc.DataTo(&form); err != nil {
+			log.Printf("Error decoding form data: %v", err)
+			return nil, err
+		}
+		form.ID = doc.Ref.ID
+		forms = append(forms, form)
+	}
+	return forms, nil
 }
 
 func (r *Repository) FetchFormById(ctx context.Context, formID string) (*models.Form, error) {
@@ -189,37 +189,69 @@ func (r *Repository) UpdateFormStatusToApproved(ctx context.Context, formID stri
 }
 
 func (r *Repository) AddTaToCourse(ctx context.Context, courseID, taID string) error {
-    courseRef := r.client.Collection("courses").Doc(courseID)
-    _, err := courseRef.Update(ctx, []firestore.Update{
-        {Path: "taList", Value: firestore.ArrayUnion(taID)},
-    })
-    return err
+	courseRef := r.client.Collection("courses").Doc(courseID)
+	_, err := courseRef.Update(ctx, []firestore.Update{
+		{Path: "taList", Value: firestore.ArrayUnion(taID)},
+	})
+	return err
 }
 
 func (r *Repository) FetchCoursesByTaID(ctx context.Context, taID string) ([]models.Course, error) {
-    var courses []models.Course
+	var courses []models.Course
 
-    query := r.client.Collection("courses").Where("taList", "array-contains", taID)
-    iter := query.Documents(ctx)
+	query := r.client.Collection("courses").Where("taList", "array-contains", taID)
+	iter := query.Documents(ctx)
 
-    defer iter.Stop()
+	defer iter.Stop()
 
-    for {
-        doc, err := iter.Next()
-        if err == iterator.Done {
-            break 
-        }
-        if err != nil {
-            return nil, err 
-        }
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
 
-        var course models.Course
-        if err := doc.DataTo(&course); err != nil {
-            return nil, err 
-        }
-        course.ID = doc.Ref.ID
-        courses = append(courses, course)
-    }
+		var course models.Course
+		if err := doc.DataTo(&course); err != nil {
+			return nil, err
+		}
+		course.ID = doc.Ref.ID
+		courses = append(courses, course)
+	}
 
-    return courses, nil 
+	return courses, nil
+}
+func (r *Repository) CreateTAApplication(ctx context.Context, application *models.TAApplication) error {
+	_, _, err := r.client.Collection("ta_applications").Add(ctx, application)
+	if err != nil {
+		log.Printf("Failed to create TA application: %v", err)
+		return err
+	}
+	return nil
+}
+
+func (r *Repository) GetTAApplicationsByUserID(ctx context.Context, userID string) ([]models.TAApplication, error) {
+	var applications []models.TAApplication
+	iter := r.client.Collection("ta_applications").Where("userId", "==", userID).Documents(ctx)
+	defer iter.Stop()
+
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		var app models.TAApplication
+		if err := doc.DataTo(&app); err != nil {
+			return nil, err
+		}
+		app.ID = doc.Ref.ID
+		applications = append(applications, app)
+	}
+	return applications, nil
 }
