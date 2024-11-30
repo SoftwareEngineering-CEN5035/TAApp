@@ -1,9 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 
 body {
   font-family: 'Roboto', Arial, sans-serif;
   color: var(--foreground);
-  background: var(--background);
   display: flex;
   justify-content: center;
   align-items: center;
