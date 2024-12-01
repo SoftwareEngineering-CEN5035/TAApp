@@ -1,0 +1,1 @@
+//const courseId = params.courseID;

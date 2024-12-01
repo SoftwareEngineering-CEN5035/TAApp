@@ -5,6 +5,7 @@ import { GrView } from "react-icons/gr";
 import { FiEdit2 } from "react-icons/fi";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 // Course Object for reference
 // type Course {
@@ -85,9 +86,9 @@ export default function Courses(){
         }
     };
 
-    useEffect(() => {
-        fetchCourses();
-    }, [fetchCourses]);
+    // useEffect(() => {
+    //    // fetchCourses();
+    // }, [fetchCourses]);
 
     const handleView = (course) => {
         setToggledView(true);
@@ -95,7 +96,7 @@ export default function Courses(){
       };
     
     const handleEdit = (courseID) => {
-        console.log(`Edit clicked for course: ${courseID}`);
+        router.push(`/editCourse${courseID}`);
     };
 
     const handleDelete = async (courseID) => {
