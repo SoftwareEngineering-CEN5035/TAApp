@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { GrView } from "react-icons/gr";
 import { FiEdit2 } from "react-icons/fi";
 import { RiDeleteBin5Line } from "react-icons/ri";
+import { useRouter } from "next/navigation";
 
 // Course Object for reference
 // type Course {
@@ -36,40 +37,57 @@ function CourseView({ course, onClose }){
 }
 
 export default function Courses(){
-    let [loading, setLoading] = useState(true);
+    let [loading, setLoading] = useState(false);
     let [course, selectedCourse] = useState();
     let [toggleView, setToggledView] = useState(false);
+    const router = useRouter();
+    let [courses, setCourses] = useState(
+        [
+            {
+                ID: "C001",
+                Name: "Introduction to Programming",
+                Type: "Core",
+                InstructorName: "Dr. John Doe",
+                InstructorId: "I001",
+                TaList: ["Alice Johnson", "Bob Smith"],
+              },
+              {
+                ID: "C002",
+                Name: "Data Structures and Algorithms",
+                Type: "Core",
+                InstructorName: "Dr. Jane Doe",
+                InstructorId: "I002",
+                TaList: ["Charlie Brown", "Dana White"],
+              },
+              {
+                ID: "C005",
+                Name: "Software Engineering",
+                Type: "Core",
+                InstructorName: "Dr. Peter Parker",
+                InstructorId: "I005",
+                TaList: ["Ivy Adams", "Jack Wilson"],
+              },
+        ]
+    )
+
     const baseUrl = 'http://localhost:8080'
 
+    const fetchCourses = async () => {
+        try {
+            setLoading(true)
+          const response = await axios.get(`${baseUrl}/courses`);
+          setCourses(response.data);
+        } catch (error) {
+          console.error("Error fetching courses:", error);
+          alert("Failed to fetch courses. Please try again later.");
+        } finally {
+          setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        console.log('Hi')
-    }, [])
-    const courses = [
-        {
-            ID: "C001",
-            Name: "Introduction to Programming",
-            Type: "Core",
-            InstructorName: "Dr. John Doe",
-            InstructorId: "I001",
-            TaList: ["Alice Johnson", "Bob Smith"],
-          },
-          {
-            ID: "C002",
-            Name: "Data Structures and Algorithms",
-            Type: "Core",
-            InstructorName: "Dr. Jane Doe",
-            InstructorId: "I002",
-            TaList: ["Charlie Brown", "Dana White"],
-          },
-          {
-            ID: "C005",
-            Name: "Software Engineering",
-            Type: "Core",
-            InstructorName: "Dr. Peter Parker",
-            InstructorId: "I005",
-            TaList: ["Ivy Adams", "Jack Wilson"],
-          },
-    ];
+        fetchCourses();
+    }, [fetchCourses]);
 
     const handleView = (course) => {
         setToggledView(true);
@@ -80,19 +98,38 @@ export default function Courses(){
         console.log(`Edit clicked for course: ${courseID}`);
     };
 
-    const handleDelete = (courseID) => {
-        console.log(`Delete clicked for course: ${courseID}`);
+    const handleDelete = async (courseID) => {
+        try {
+            await axios.delete(`${baseUrl}/courses/${courseID}`);
+            
+            const updatedCourses = courses.filter((course) => course.ID !== courseID);
+            setCourses(updatedCourses);
+
+            console.log(`Course ${courseID} deleted successfully.`);
+        } catch (error) {
+            console.error(`Error deleting course ${courseID}:`, error);
+            alert("Failed to delete the course. Please try again.");
+        }
     };
 
     const handleCloseView = () => {
         setToggledView(false);
         selectedCourse(null);
       };
+
+    const handleAdd = () => {
+        router.push('/createCourse');
+    }
     
     return (
         <div className="w-[100%] h-[100%] flex bg-slate-200 text-center items-center flex-col">
+            {loading && <p className='text-black text-xl font-bold'>Loading...</p>}
+            {!loading &&
+            <>
             <h1 className="capitalize text-3xl font-bold mt-3">Courses</h1>
-            <button className="bg-green-500 hover:bg-green-600 left-20 mt-[5vh] absolute cursor-pointer text-white px-3 py-1 rounded-lg"> <IoIosAdd/> </button>
+            <button className="bg-green-500 hover:bg-green-600 left-20 mt-[5vh] absolute cursor-pointer text-white px-3 py-1 rounded-lg"
+                onClick={handleAdd}
+            > <IoIosAdd/> </button>
             <table className="table-auto border-collapse border mt-6 border-gray-400 w-[90%] text-left">
                 <thead>
                 <tr>
@@ -133,8 +170,9 @@ export default function Courses(){
                 ))}
                 </tbody>
             </table>
-            <p className="text-black text-sm font-light ml-[75vw] mt-3">Displaying {courses.length}/10 entries</p>
+            <p className="text-black text-sm font-light ml-[75vw] mt-3">Displaying {courses.length} entries</p>
             {toggleView && <CourseView course={course} onClose={handleCloseView}/>}
+            </>}
         </div>
     )
 }

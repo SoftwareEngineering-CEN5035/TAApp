@@ -161,6 +161,30 @@ func (r *Repository) GetAllForms(ctx context.Context) ([]models.Form, error) {
     return forms, nil
 }
 
+func (r *Repository) GetAllCourses(ctx context.Context) ([]models.Course, error) {
+    var courses []models.Course
+    iter := r.client.Collection("courses").Documents(ctx)
+    defer iter.Stop() 
+    for {
+        doc, err := iter.Next()
+        if err == iterator.Done {
+            break
+        }
+        if err != nil {
+            log.Printf("Error retrieving courses: %v", err)
+            return nil, err
+        }
+        var course models.Course
+        if err := doc.DataTo(&course); err != nil {
+            log.Printf("Error decoding course data: %v", err)
+            return nil, err
+        }
+        course.ID = doc.Ref.ID
+        courses = append(courses, course)
+    }
+    return courses, nil
+}
+
 func (r *Repository) FetchFormById(ctx context.Context, formID string) (*models.Form, error) {
 	iter := r.client.Collection("forms").Where("id", "==", formID).Limit(1).Documents(ctx)
 	doc, err := iter.Next()
