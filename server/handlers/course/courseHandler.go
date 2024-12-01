@@ -73,3 +73,30 @@ func GetAllCourses(c echo.Context, repo *repository.Repository, authClient *auth
 
 	return c.JSON(http.StatusOK, courseList)
 }
+
+func GetUserByRole(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
+	ctx := context.Background()
+
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
+	}
+	tokenString := authHeader[len("Bearer "):]
+	isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
+
+	if !isAuth {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
+	}
+
+	role := c.Param("role")
+	if role == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Role is required"})
+	}
+
+	users, err := repo.FetchUsersByRole(ctx, role)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Users not found"})
+	}
+
+	return c.JSON(http.StatusOK, users)
+}

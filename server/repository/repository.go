@@ -32,6 +32,30 @@ func (r *Repository) FetchUserByEmail(ctx context.Context, email string) (*model
     return &user, nil
 }
 
+func (r *Repository) FetchUsersByRole(ctx context.Context, role string) ([]models.User, error) {
+    iter := r.client.Collection("users").Where("role", "==", role).Documents(ctx)
+    
+    var users []models.User
+    for {
+        doc, err := iter.Next()
+        if err != nil {
+            if err == iterator.Done {
+                break
+            }
+            return nil, err
+        }
+        
+        var user models.User
+        if err := doc.DataTo(&user); err != nil {
+            return nil, err
+        }
+        
+        users = append(users, user)
+    }
+    
+    return users, nil
+}
+
 func (r *Repository) CreateUser(ctx context.Context, user *models.User) error {
     _, _, err := r.client.Collection("users").Add(ctx, user)
     if err != nil {
