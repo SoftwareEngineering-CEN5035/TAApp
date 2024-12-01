@@ -96,7 +96,7 @@ export default function Courses(){
       };
     
     const handleEdit = (courseID) => {
-        router.push(`/editCourse${courseID}`);
+        router.push(`/editCourse/${courseID}`);
     };
 
     const handleDelete = async (courseID) => {
@@ -128,26 +128,26 @@ export default function Courses(){
             {!loading &&
             <>
             <h1 className="capitalize text-3xl font-bold mt-3">Courses</h1>
-            <button className="bg-green-500 hover:bg-green-600 left-20 mt-[5vh] absolute cursor-pointer text-white px-3 py-1 rounded-lg"
+            <button className="bg-green-500 hover:bg-green-600 left-20 max-[500px]:left-3 mt-[5vh] absolute cursor-pointer text-white px-3 py-1 rounded-lg"
                 onClick={handleAdd}
             > <IoIosAdd/> </button>
-            <table className="table-auto border-collapse border mt-6 border-gray-400 w-[90%] text-left">
+            <table className="table-auto border-collapse border mt-6 max-[500px]:w-[95%] overflow-x-auto border-gray-400 w-[90%] text-left">
                 <thead>
                 <tr>
-                    <th className="border border-gray-400 px-4 py-2">Course ID</th>
-                    <th className="border border-gray-400 px-4 py-2">Course Type</th>
-                    <th className="border border-gray-400 px-4 py-2">Course Name</th>
-                    <th className="border border-gray-400 px-4 py-2">Instructor</th>
+                    <th className="border border-gray-400 px-4 py-2 max-[500px]:px-1">Course ID</th>
+                    <th className="border border-gray-400 px-4 py-2 max-[500px]:px-1">Course Type</th>
+                    <th className="border border-gray-400 px-4 py-2 max-[500px]:px-1">Course Name</th>
+                    <th className="border border-gray-400 px-4 py-2 max-[500px]:px-1">Instructor</th>
                 </tr>
                 </thead>
                 <tbody>
                 {courses.map((course) => (
                     <tr key={course.ID} className="hover:bg-gray-100">
-                        <td className="border border-gray-400 px-4 py-2">{course.ID}</td>
-                        <td className="border border-gray-400 px-4 py-2">{course.Type}</td>
-                        <td className="border border-gray-400 px-4 py-2">{course.Name}</td>
-                        <td className="border border-gray-400 px-4 py-2">{course.InstructorName}</td>
-                        <td className="border border-gray-400 px-4 py-2">
+                        <td className="border border-gray-400 px-4 py-2 max-[500px]:px-1">{course.ID}</td>
+                        <td className="border border-gray-400 px-4 py-2 max-[500px]:px-1">{course.Type}</td>
+                        <td className="border border-gray-400 px-4 py-2 max-[500px]:px-1">{course.Name}</td>
+                        <td className="border border-gray-400 px-4 py-2 max-[500px]:px-1">{course.InstructorName}</td>
+                        <td className="border border-gray-400 px-4 py-2 max-[500px]:px-1">
                             <button
                             className="bg-blue-500 text-white px-3 py-1 rounded-lg mr-2 hover:bg-blue-600"
                             onClick={() => handleView(course)}
