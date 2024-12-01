@@ -29,9 +29,7 @@ const DashboardPage = () => {
   return (
     <div className="h-[100%] absolute w-[100vw] flex flex-col items-center">
       <DepartmentNavbar setSelectedPage={setSelectedPage}  selectedPage={selectedPage}/>
-      <div className="w-[100%] h-[100%] flex bg-slate-200 justify-center">
-        {renderBodyContent()}
-      </div>
+      {renderBodyContent()}
     </div>
   );
 };
