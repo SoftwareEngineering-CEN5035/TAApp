@@ -45,7 +45,7 @@ func RegisterRoutes(e *echo.Echo, repo *repository.Repository, authClient *auth.
 	e.PATCH("/courses", func(c echo.Context) error {
 		return course.UpdateCourse(c, repo, authClient)
 	})
-	e.GET("/coursesByTA", func(c echo.Context) error {
+	e.GET("/coursesByTA/:id", func(c echo.Context) error {
 		return course.GetCoursesByTA(c, repo, authClient)
 	})
 	e.GET("/forms/:id", func(c echo.Context) error {

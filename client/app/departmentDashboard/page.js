@@ -4,10 +4,8 @@ import { useEffect, useState } from 'react';
 import DepartmentNavbar from '../navbars/departmentNavbar';
 import Courses from './pagesDirectory/courses';
 import Applications from './pagesDirectory/applications';
-import { useRouter } from 'next/navigation';
 
 const DashboardPage = () => {
-  const router = useRouter();
   const [selectedPage, setSelectedPage] = useState('course'); 
 
   // useEffect(() => {

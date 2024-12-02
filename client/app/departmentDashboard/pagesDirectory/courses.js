@@ -2,20 +2,11 @@
 import { IoIosAdd } from "react-icons/io";
 import { useState, useEffect } from 'react';
 import { GrView } from "react-icons/gr";
+import Select from 'react-select';
 import { FiEdit2 } from "react-icons/fi";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-
-// Course Object for reference
-// type Course {
-//     ID: String,
-//     Name: String,
-//     Type: String,
-//     InstructorName: String,
-//     InstructorId: String, 
-//     TaList: Array,
-// }
 
 function CourseView({ course, onClose }){
     return (
@@ -41,6 +32,7 @@ export default function Courses(){
     let [loading, setLoading] = useState(false);
     let [course, selectedCourse] = useState();
     let [toggleView, setToggledView] = useState(false);
+    let [taFilter, setTaFilter] = useState('');
     const router = useRouter();
     let [courses, setCourses] = useState(
         [
@@ -86,9 +78,34 @@ export default function Courses(){
         }
     };
 
-    // useEffect(() => {
-    //    // fetchCourses();
-    // }, [fetchCourses]);
+    const fetchUsersByRole = async (role) => {
+        try {
+            const response = await axios.get(`${baseUrl}/users/${role}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching users by role:', error);
+            throw error; 
+        }
+    };
+
+    useEffect(() => {
+
+    const fetchData = async () => {
+        try {
+            const taResult = await fetchUsersByRole('TA');
+            setTaList(taResult.map(user => ({
+                value: user.ID, 
+                label: user.Name
+            })));
+        } catch (error) {
+            console.error('Error fetching user roles:', error);
+        }
+    };
+
+    fetchData();
+    fetchCourses();
+    
+    }, [fetchCourses]);
 
     const handleView = (course) => {
         setToggledView(true);
@@ -122,6 +139,21 @@ export default function Courses(){
         router.push('/createCourse');
     }
     
+    const handleTAChange = async (selectedOptions) => {
+        setTaFilter(selectedOptions);
+
+        try {
+            setLoading(true)
+          const response = await axios.get(`${baseUrl}/coursesByTA/:${taFilter}`);
+          setCourses(response.data);
+        } catch (error) {
+          console.error("Error fetching courses:", error);
+          alert("Failed to fetch courses. Please try again later.");
+        } finally {
+          setLoading(false);
+        }
+    };
+
     return (
         <div className="w-[100%] h-[100%] flex bg-slate-200 text-center items-center flex-col">
             {loading && <p className='text-black text-xl font-bold'>Loading...</p>}
@@ -131,6 +163,10 @@ export default function Courses(){
             <button className="bg-green-500 hover:bg-green-600 left-20 max-[500px]:left-3 mt-[5vh] absolute cursor-pointer text-white px-3 py-1 rounded-lg"
                 onClick={handleAdd}
             > <IoIosAdd/> </button>
+            <div className="absolute mt-[3vh] right-20">
+                <Select placeholder="Filter By TA" onChange={handleTAChange}  closeMenuOnSelect={true} isClearable={true} options={taList}/>
+            </div>
+
             <table className="table-auto border-collapse border mt-6 max-[500px]:w-[95%] overflow-x-auto border-gray-400 w-[90%] text-left">
                 <thead>
                 <tr>
