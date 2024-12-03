@@ -296,3 +296,31 @@ func (r *Repository) FetchCoursesByTaID(ctx context.Context, taID string) ([]mod
 
     return courses, nil 
 }
+
+func (r *Repository) FetchFormsByTaID(ctx context.Context, taID string) ([]models.Form, error) {
+    var forms []models.Form
+
+    query := r.client.Collection("forms").Where("uploaderID", "==", taID)
+    iter := query.Documents(ctx)
+
+    defer iter.Stop()
+
+    for {
+        doc, err := iter.Next()
+        if err == iterator.Done {
+            break 
+        }
+        if err != nil {
+            return nil, err 
+        }
+
+        var form models.Form
+        if err := doc.DataTo(&form); err != nil {
+            return nil, err 
+        }
+        form.ID = doc.Ref.ID
+        forms = append(forms, form)
+    }
+
+    return forms, nil 
+}

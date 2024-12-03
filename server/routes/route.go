@@ -51,6 +51,9 @@ func RegisterRoutes(e *echo.Echo, repo *repository.Repository, authClient *auth.
 	e.GET("/forms/:id", func(c echo.Context) error {
 		return department.GetFormById(c, repo, authClient)
 	})
+	e.GET("/formsByTa/:id", func(c echo.Context) error {
+		return department.GetFormsByTA(c, repo, authClient)
+	})
 	e.GET("/users/:role", func(c echo.Context) error {
 		return course.GetUserByRole(c, repo, authClient)
 	})

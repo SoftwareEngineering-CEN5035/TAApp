@@ -32,6 +32,7 @@ export default function Courses(){
     let [loading, setLoading] = useState(false);
     let [course, selectedCourse] = useState();
     let [toggleView, setToggledView] = useState(false);
+    let [taList, setTaList] = useState([]);
     let [taFilter, setTaFilter] = useState('');
     const router = useRouter();
     let [courses, setCourses] = useState(
@@ -72,7 +73,6 @@ export default function Courses(){
           setCourses(response.data);
         } catch (error) {
           console.error("Error fetching courses:", error);
-          alert("Failed to fetch courses. Please try again later.");
         } finally {
           setLoading(false);
         }
@@ -155,7 +155,7 @@ export default function Courses(){
     };
 
     return (
-        <div className="w-[100%] h-[100%] flex bg-slate-200 text-center items-center flex-col">
+        <div className="w-[100%] h-[100%] flex bg-slate-50 text-center items-center flex-col">
             {loading && <p className='text-black text-xl font-bold'>Loading...</p>}
             {!loading &&
             <>

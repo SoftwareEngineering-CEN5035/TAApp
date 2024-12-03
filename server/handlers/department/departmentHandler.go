@@ -203,3 +203,30 @@ func ApproveTaForCourse(c echo.Context, repo *repository.Repository, authClient 
     return c.JSON(http.StatusOK, map[string]string{"message": "TA approved for course successfully"})
 
 }
+
+func GetFormsByTA(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
+	ctx := context.Background()
+
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
+	}
+	tokenString := authHeader[len("Bearer "):]
+	isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
+
+	if !isAuth {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
+	}
+
+	taID := c.Param("id")
+	if taID == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "TA ID is required"})
+	}
+
+	forms, err := repo.FetchFormsByTaID(ctx, taID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Forms not found"})
+	}
+
+	return c.JSON(http.StatusOK, forms)
+}
