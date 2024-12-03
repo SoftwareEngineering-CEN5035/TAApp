@@ -10,7 +10,7 @@ import (
 	"ta-manager-api/repository"
 	"ta-manager-api/routes"
 
-	"firebase.google.com/go"
+	firebase "firebase.google.com/go"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -47,10 +47,12 @@ func main() {
 
 	e := echo.New()
 
-	// CORS middleware
+	// Middleware
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{
-			"http://localhost:3000", // Allow requests from FE
+			"http://localhost:3000",
 		},
 		AllowMethods: []string{
 			http.MethodGet,
