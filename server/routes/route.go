@@ -16,13 +16,11 @@ func RegisterRoutes(e *echo.Echo, repo *repository.Repository, authClient *auth.
 	// Add these to your RegisterRoutes function
 	e.POST("/ta/application", func(c echo.Context) error {
 		return ta.CreateTAApplication(c, repo, authClient)
-	}
+	})
 	e.POST("/courses", func(c echo.Context) error {
 		return department.CreateCourseHandler(c, repo, authClient)
 	})
-	e.POST("/CreateAccount", func(c echo.Context) error {
-		return login.CreateAccount(c, repo, authClient)
-	})
+
 	e.POST("/courses", func(c echo.Context) error {
 		return department.CreateCourseHandler(c, repo, authClient)
 	})
@@ -35,9 +33,7 @@ func RegisterRoutes(e *echo.Echo, repo *repository.Repository, authClient *auth.
 	e.POST("/newuserwelcome", func(c echo.Context) error {
 		return login.NewUserWelcome(c, repo, authClient)
 	})
-	e.POST("/GoogleLogin", func(c echo.Context) error {
-        return login.GoogleLogin(c, repo, authClient)
-    })
+
 	e.DELETE("/courses/:id", func(c echo.Context) error {
 		return department.DeleteCourse(c, repo, authClient)
 	})
