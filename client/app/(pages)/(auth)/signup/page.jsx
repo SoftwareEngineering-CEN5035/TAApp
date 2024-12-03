@@ -11,6 +11,7 @@ import "react-toastify/dist/ReactToastify.css";
 const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("TA"); // Default role selection
   const router = useRouter();
 
   function handleSignUp(event) {
@@ -18,7 +19,7 @@ const SignUp = () => {
     if (email.trim() === "" || password.trim() === "") {
       setEmail("");
       setPassword("");
-      return toast.error("Please do not leave inputs blank !", {
+      return toast.error("Please do not leave inputs blank!", {
         position: toast.POSITION.TOP_RIGHT,
       });
     }
@@ -32,18 +33,34 @@ const SignUp = () => {
           .getIdToken()
           .then((token) => {
             localStorage.setItem("Token", token);
+
+            // Send the Firebase token and role to your backend
+            fetch("http://localhost:9000/signup", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ token, role }),
+            })
+              .then((response) => {
+                if (!response.ok) {
+                  throw new Error("Failed to send role to server");
+                }
+                toast.success("Account created successfully!");
+                setTimeout(() => {
+                  router.push(`/`);
+                }, 1000);
+              })
+              .catch((error) => {
+                toast.error(error.message);
+              });
           })
           .catch((error) => {
-            return toast.error(error.message);
+            toast.error(error.message);
           });
-
-        toast.success("Account created successfully!");
-        setTimeout(() => {
-          router.push(`/`);
-        }, 1000);
       })
       .catch((error) => {
-        return toast.error(error.message);
+        toast.error(error.message);
       });
   }
 
@@ -90,6 +107,22 @@ const SignUp = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+          </div>
+          <div>
+            <label htmlFor="role" className="block mb-2 font-medium text-black">
+              Role
+            </label>
+            <select
+              id="role"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="w-full p-3 border border-gray-300 text-black rounded-md focus:ring-purple-500 focus:border-purple-500"
+            >
+              <option value="TA">TA</option>
+              <option value="Professor">Professor</option>
+              <option value="Department Staff">Department Staff</option>
+              <option value="TA Committee Member">TA Committee Member</option>
+            </select>
           </div>
           <button
             type="submit"

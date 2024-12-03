@@ -18,26 +18,19 @@ func NewRepository(client *firestore.Client) *Repository {
 	return &Repository{client: client}
 }
 
-func (r *Repository) FetchUserByEmail(ctx context.Context, email string) (*models.User, error) {
-	iter := r.client.Collection("users").Where("email", "==", email).Limit(1).Documents(ctx)
-	doc, err := iter.Next()
-	if err != nil {
-		return nil, err
-	}
-	var user models.User
-	if err := doc.DataTo(&user); err != nil {
-		return nil, err
-	}
-
-	return &user, nil
-}
-
 func (r *Repository) CreateUser(ctx context.Context, user *models.User) error {
-	_, _, err := r.client.Collection("users").Add(ctx, user)
+	_, _, err := r.client.Collection("users").Add(ctx, map[string]interface{}{
+		"id":    user.ID,
+		"name":  user.Name,
+		"email": user.Email,
+		"role":  user.Role,
+	})
 	if err != nil {
+		fmt.Println("this shit was broken")
 		log.Printf("Failed to create user: %v", err)
 		return err
 	}
+	fmt.Println("this shit was added")
 	return nil
 }
 
@@ -60,9 +53,14 @@ func (r *Repository) CreateForm(ctx context.Context, form *models.Form) error {
 }
 
 func (r *Repository) FetchUserByUID(ctx context.Context, uid string) (*models.User, error) {
+	println("this is uid")
+	println(uid)
+	println("this is uid")
+
 	iter := r.client.Collection("users").Where("id", "==", uid).Limit(1).Documents(ctx)
 	doc, err := iter.Next()
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 	var user models.User
@@ -90,10 +88,9 @@ func (r *Repository) CheckUserExists(ctx context.Context, uid string) error {
 
 func (r *Repository) UpdateUser(ctx context.Context, user *models.User) error {
 	_, err := r.client.Collection("users").Doc(user.ID).Set(ctx, map[string]interface{}{
-		"name":           user.Name,
-		"email":          user.Email,
-		"profilePicture": user.ProfilePicture,
-		"role":           user.Role,
+		"name":  user.Name,
+		"email": user.Email,
+		"role":  user.Role,
 	}, firestore.MergeAll)
 	return err
 }
