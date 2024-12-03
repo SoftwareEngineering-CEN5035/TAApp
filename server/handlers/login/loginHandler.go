@@ -61,7 +61,7 @@ var validRoles = map[string]bool{
 	"Department Staff":    true,
 }
 
-func Signup(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
+func NewUserWelcome(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
 	// Extract Firebase token from Authorization header
 	fmt.Println("check")
 
@@ -109,5 +109,5 @@ func Signup(c echo.Context, repo *repository.Repository, authClient *auth.Client
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to create user"})
 	}
 
-	return c.JSON(http.StatusCreated, map[string]string{"message": "User created successfully"})
+	return c.JSON(http.StatusOK, map[string]string{"message": "User created successfully"})
 }

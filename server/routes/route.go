@@ -26,8 +26,8 @@ func RegisterRoutes(e *echo.Echo, repo *repository.Repository, authClient *auth.
 	e.POST("/login", func(c echo.Context) error {
 		return login.Login(c, repo, authClient)
 	})
-	e.POST("/signup", func(c echo.Context) error {
-		return login.Signup(c, repo, authClient)
+	e.POST("/newuserwelcome", func(c echo.Context) error {
+		return login.NewUserWelcome(c, repo, authClient)
 	})
 	e.DELETE("/courses/:id", func(c echo.Context) error {
 		return department.DeleteCourse(c, repo, authClient)
