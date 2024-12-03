@@ -5,17 +5,17 @@ import { createUserWithEmailAndPassword } from "@firebase/auth";
 import { auth } from "../../../_lib/firebase";
 import { ToastContainer, toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import Link from "next/link"; // Import Link for navigation
+import Link from "next/link";
 import "react-toastify/dist/ReactToastify.css";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("TA"); // Default role selection
   const router = useRouter();
 
-  function handleSignUp(event) {
+  const handleSignUp = async (event) => {
     event.preventDefault();
+
     if (email.trim() === "" || password.trim() === "") {
       setEmail("");
       setPassword("");
@@ -24,45 +24,23 @@ const SignUp = () => {
       });
     }
 
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredentials) => {
-        const uid = userCredentials.user.uid;
-        console.log(uid);
+    try {
+      const userCredentials = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
-        userCredentials.user
-          .getIdToken()
-          .then((token) => {
-            localStorage.setItem("Token", token);
+      toast.success("Account created successfully!");
 
-            // Send the Firebase token and role to your backend
-            fetch("http://localhost:9000/signup", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ token, role }),
-            })
-              .then((response) => {
-                if (!response.ok) {
-                  throw new Error("Failed to send role to server");
-                }
-                toast.success("Account created successfully!");
-                setTimeout(() => {
-                  router.push(`/`);
-                }, 1000);
-              })
-              .catch((error) => {
-                toast.error(error.message);
-              });
-          })
-          .catch((error) => {
-            toast.error(error.message);
-          });
-      })
-      .catch((error) => {
-        toast.error(error.message);
-      });
-  }
+      // Redirect to the login page after a short delay
+      setTimeout(() => {
+        router.push("/login");
+      }, 1000);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FFFAF1] flex items-center justify-center">
@@ -107,22 +85,6 @@ const SignUp = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-          </div>
-          <div>
-            <label htmlFor="role" className="block mb-2 font-medium text-black">
-              Role
-            </label>
-            <select
-              id="role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full p-3 border border-gray-300 text-black rounded-md focus:ring-purple-500 focus:border-purple-500"
-            >
-              <option value="TA">TA</option>
-              <option value="Professor">Professor</option>
-              <option value="Department Staff">Department Staff</option>
-              <option value="TA Committee Member">TA Committee Member</option>
-            </select>
           </div>
           <button
             type="submit"

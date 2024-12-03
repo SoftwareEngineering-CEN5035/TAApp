@@ -9,8 +9,10 @@ import "react-toastify/dist/ReactToastify.css";
 const NewUserWelcome = () => {
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
-  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true); // Track loading state
   const [token, setToken] = useState("");
+
+  const router = useRouter();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -20,15 +22,23 @@ const NewUserWelcome = () => {
   }, []);
 
   useEffect(() => {
-    if (!auth.currentUser) {
-      router.push("/login");
-    }
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        // User is signed in
+        setIsLoading(false); // Loading complete
+      } else {
+        // User is not signed in
+        router.push("/login");
+      }
+    });
+
+    // Cleanup the subscription on unmount
+    return () => unsubscribe();
   }, [router]);
 
   const handleSelectChange = (selectedOption) => {
     setRole(selectedOption.value);
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -38,8 +48,7 @@ const NewUserWelcome = () => {
     }
 
     try {
-      console.log("boutta sign up or sumn");
-      fetch("http://localhost:9000/signup", {
+      const response = await fetch("http://localhost:9000/newuserwelcome", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -56,6 +65,7 @@ const NewUserWelcome = () => {
       toast.success("Signup successful!");
       router.push("/dashboard");
     } catch (error) {
+      console.error(error);
       toast.error(error.message || "An error occurred");
     }
   };
@@ -86,9 +96,10 @@ const NewUserWelcome = () => {
           <div>
             <label className="block mb-2">Role</label>
             <Select
+              id="accountType"
+              instanceId="accountTypeSelect" // Use a stable instanceId
               options={roleOptions}
-              placeholder="Select Role"
-              value={roleOptions.find((opt) => opt.value === role)}
+              value={roleOptions.find((option) => option.value === role)} // Use `role` here
               onChange={handleSelectChange}
             />
           </div>
