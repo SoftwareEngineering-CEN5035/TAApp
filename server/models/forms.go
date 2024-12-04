@@ -5,7 +5,7 @@ type Form struct {
 	UploaderID      string `firestore:"uploaderID" json:"UploaderID"`
 	UploaderName    string `firestore:"uploaderName" json:"UploaderName"`
 	CourseAppliedID string `firestore:"courseAppliedID" json:"CourseAppliedID"`
-	FileTitle       string `firestore:"fileTitle" json:"FileTitle"`
+	CourseName      string `firestore:"courseName" json:"CourseName"`
 	FileURL         string `firestore:"fileURL" json:"FileURL"`
 	Status          string `firestore:"status" json:"Status"`
 }
