@@ -34,6 +34,10 @@ func RegisterRoutes(e *echo.Echo, repo *repository.Repository, authClient *auth.
 		return login.NewUserWelcome(c, repo, authClient)
 	})
 
+	e.GET("/checkUserDocument", func(c echo.Context) error {
+		return login.CheckUserDocument(c, repo, authClient)
+	})
+
 	e.DELETE("/courses/:id", func(c echo.Context) error {
 		return department.DeleteCourse(c, repo, authClient)
 	})

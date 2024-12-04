@@ -10,7 +10,49 @@ import (
 
 	"firebase.google.com/go/auth"
 	"github.com/labstack/echo/v4"
+	"google.golang.org/api/iterator"
 )
+
+func CheckUserDocument(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
+	fmt.Println("fixin check")
+	tokenHeader := c.Request().Header.Get("Authorization")
+	if tokenHeader == "" {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Authorization header is required"})
+	}
+	idToken := tokenHeader[len("Bearer "):]
+
+	token, err := authClient.VerifyIDToken(context.Background(), idToken)
+	fmt.Println("this yo token:", token)
+	if err != nil {
+		log.Printf("Invalid token: %v", err)
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid token"})
+	}
+
+	uid := token.UID
+	user, err := repo.FetchUserByUID(context.Background(), uid)
+	if err != nil {
+		if err == iterator.Done {
+			// No document found
+			return c.JSON(http.StatusOK, map[string]interface{}{
+				"exists": false,
+			})
+		}
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Error fetching user document"})
+	}
+	fmt.Println("this yo uid:", token)
+
+	if user != nil {
+		fmt.Println(user.Role)
+		return c.JSON(http.StatusOK, map[string]interface{}{
+			"exists": true,
+			"role":   user.Role,
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"exists": false,
+	})
+}
 
 func AuthUser(ctx context.Context, tokenString string, repo *repository.Repository, authClient *auth.Client) (bool, string) {
 	// Validate the token using VerifyIDToken
@@ -25,16 +67,7 @@ func AuthUser(ctx context.Context, tokenString string, repo *repository.Reposito
 
 	return true, uid
 }
-
 func Login(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
-	type UserRequest struct {
-		UserType string `json:"usertype"`
-	}
-	var req UserRequest
-	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request data"})
-	}
-
 	authHeader := c.Request().Header.Get("Authorization")
 	if authHeader == "" {
 		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
@@ -51,6 +84,7 @@ func Login(c echo.Context, repo *repository.Repository, authClient *auth.Client)
 	}
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"isAccountMade": true,
+		"role":          user.Role, // Returning the user's role
 	})
 }
 

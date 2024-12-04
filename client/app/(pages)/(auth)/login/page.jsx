@@ -12,7 +12,6 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [userType, setUserType] = useState("TA");
   const router = useRouter();
-
   const loginUser = async (token) => {
     try {
       const response = await fetch("http://localhost:9000/login", {
@@ -21,13 +20,30 @@ const Login = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ usertype: userType }),
       });
 
       const data = await response.json();
-      console.log(data);
+
       if (data.isAccountMade) {
-        router.push("/dashboard");
+        // Redirect based on user role
+        switch (
+          data.role // Using role from backend response
+        ) {
+          case "TA":
+            router.push("/TADashboard");
+            break;
+          case "Teacher":
+            router.push("/teacherDashboard");
+            break;
+          case "TA Committee Member":
+            router.push("/committeeDashboard");
+            break;
+          case "Department Staff":
+            router.push("/staffDashboard");
+            break;
+          default:
+            router.push("/dashboard"); // Fallback route
+        }
       } else {
         router.push("/newuserwelcome");
       }
@@ -111,25 +127,6 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-          </div>
-          <div>
-            <label
-              htmlFor="usertype"
-              className="block mb-2 font-medium text-black"
-            >
-              User Type
-            </label>
-            <select
-              id="usertype"
-              className="w-full p-3 border border-gray-300 rounded-md"
-              value={userType}
-              onChange={(e) => setUserType(e.target.value)}
-            >
-              <option value="TA">TA</option>
-              <option value="Teacher">Teacher</option>
-              <option value="TA Committee Member">TA Committee Member</option>
-              <option value="Department Staff">Department Staff</option>
-            </select>
           </div>
           <button
             onClick={LoginWithEmail}

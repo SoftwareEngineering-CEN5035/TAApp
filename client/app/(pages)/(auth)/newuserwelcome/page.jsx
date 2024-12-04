@@ -9,7 +9,7 @@ import "react-toastify/dist/ReactToastify.css";
 const NewUserWelcome = () => {
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
-  const [isLoading, setIsLoading] = useState(true); // Track loading state
+  const [isLoading, setIsLoading] = useState(true);
   const [token, setToken] = useState("");
 
   const router = useRouter();
@@ -22,23 +22,62 @@ const NewUserWelcome = () => {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
-        // User is signed in
-        setIsLoading(false); // Loading complete
+        setIsLoading(false);
+
+        // Check if user document exists
+        try {
+          const response = await fetch(
+            "http://localhost:9000/checkUserDocument",
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("Token")}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (response.ok) {
+            const { exists, role } = await response.json();
+            if (exists) {
+              console.log(`User role: ${role}`);
+
+              // Implement switch-case routing based on role
+              switch (role) {
+                case "TA":
+                  router.push("/TADashboard");
+                  break;
+                case "Teacher":
+                  router.push("/teacherDashboard");
+                  break;
+                case "TA Committee Member":
+                  router.push("/committeeDashboard");
+                  break;
+                case "Department Staff":
+                  router.push("/staffDashboard");
+                  break;
+                default:
+                  router.push("/dashboard"); // Fallback route
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error checking user document:", error);
+        }
       } else {
-        // User is not signed in
         router.push("/login");
       }
     });
 
-    // Cleanup the subscription on unmount
     return () => unsubscribe();
   }, [router]);
 
   const handleSelectChange = (selectedOption) => {
     setRole(selectedOption.value);
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -97,9 +136,9 @@ const NewUserWelcome = () => {
             <label className="block mb-2">Role</label>
             <Select
               id="accountType"
-              instanceId="accountTypeSelect" // Use a stable instanceId
+              instanceId="accountTypeSelect"
               options={roleOptions}
-              value={roleOptions.find((option) => option.value === role)} // Use `role` here
+              value={roleOptions.find((option) => option.value === role)}
               onChange={handleSelectChange}
             />
           </div>
