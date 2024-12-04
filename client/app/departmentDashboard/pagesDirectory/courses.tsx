@@ -8,7 +8,26 @@ import { RiDeleteBin5Line } from "react-icons/ri";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
-function CourseView({ course, onClose }){
+type Course = {
+  ID: String,
+  Name: String,
+  Type: String,
+  InstructorName: String,
+  InstructorID: String, 
+  TaList: Array<string>,
+}
+
+type CourseViewProps = {
+  course: Course; 
+  onClose: () => void; 
+};
+
+type SelectOption = {
+  value: string; 
+  label: string;
+};
+
+function CourseView({ course, onClose }: CourseViewProps){
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-3/4 max-w-lg">
@@ -30,9 +49,9 @@ function CourseView({ course, onClose }){
 
 export default function Courses(){
     let [loading, setLoading] = useState(false);
-    let [course, selectedCourse] = useState();
+    let [course, selectedCourse] = useState<Course>();
     let [toggleView, setToggledView] = useState(false);
-    let [taList, setTaList] = useState([]);
+    let [taList, setTaList] = useState<SelectOption[]>([]);
     let [taFilter, setTaFilter] = useState('');
     const router = useRouter();
     let [courses, setCourses] = useState(
@@ -42,7 +61,7 @@ export default function Courses(){
                 Name: "Introduction to Programming",
                 Type: "Core",
                 InstructorName: "Dr. John Doe",
-                InstructorId: "I001",
+                InstructorID: "I001",
                 TaList: ["Alice Johnson", "Bob Smith"],
               },
               {
@@ -50,7 +69,7 @@ export default function Courses(){
                 Name: "Data Structures and Algorithms",
                 Type: "Core",
                 InstructorName: "Dr. Jane Doe",
-                InstructorId: "I002",
+                InstructorID: "I002",
                 TaList: ["Charlie Brown", "Dana White"],
               },
               {
@@ -58,7 +77,7 @@ export default function Courses(){
                 Name: "Software Engineering",
                 Type: "Core",
                 InstructorName: "Dr. Peter Parker",
-                InstructorId: "I005",
+                InstructorID: "I005",
                 TaList: ["Ivy Adams", "Jack Wilson"],
               },
         ]
@@ -78,7 +97,7 @@ export default function Courses(){
         }
     };
 
-    const fetchUsersByRole = async (role) => {
+    const fetchUsersByRole = async (role: string) => {
         try {
             const response = await axios.get(`${baseUrl}/users/${role}`);
             return response.data;
@@ -88,35 +107,35 @@ export default function Courses(){
         }
     };
 
+    const fetchTAListData = async () => {
+      try {
+          const taResult = await fetchUsersByRole('TA');
+          setTaList(taResult.map(user => ({
+              value: user.ID, 
+              label: user.Name
+          })));
+      } catch (error) {
+          console.error('Error fetching user roles:', error);
+      }
+  };
+
     useEffect(() => {
 
-    const fetchData = async () => {
-        try {
-            const taResult = await fetchUsersByRole('TA');
-            setTaList(taResult.map(user => ({
-                value: user.ID, 
-                label: user.Name
-            })));
-        } catch (error) {
-            console.error('Error fetching user roles:', error);
-        }
-    };
-
-    fetchData();
+    fetchTAListData();
     fetchCourses();
     
-    }, [fetchCourses]);
+    }, [fetchCourses, fetchTAListData]);
 
-    const handleView = (course) => {
+    const handleView = (course: Course) => {
         setToggledView(true);
         selectedCourse(course);
       };
     
-    const handleEdit = (courseID) => {
+    const handleEdit = (courseID: string) => {
         router.push(`/editCourse/${courseID}`);
     };
 
-    const handleDelete = async (courseID) => {
+    const handleDelete = async (courseID: string) => {
         try {
             await axios.delete(`${baseUrl}/courses/${courseID}`);
             
@@ -139,8 +158,8 @@ export default function Courses(){
         router.push('/createCourse');
     }
     
-    const handleTAChange = async (selectedOptions) => {
-        setTaFilter(selectedOptions);
+    const handleTAChange = async (selectedOptions: SelectOption) => {
+        setTaFilter(selectedOptions.value);
 
         try {
             setLoading(true)

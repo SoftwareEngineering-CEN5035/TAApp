@@ -76,7 +76,7 @@ export default function CreateCourse(){
 
 
     const handleSubmit = async () => {
-        if(name.trim().length === 0 || type.trim().length() === 0 || instructorName.trim().length() === 0 || selectedTAs.length() === 0){
+        if(name.trim().length === 0 || type.trim().length === 0 || instructorName.trim().length === 0 || selectedTAs.length === 0){
             return alert('Please Fill Inputs')
         }
         const data = {

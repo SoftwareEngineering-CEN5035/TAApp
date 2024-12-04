@@ -1,19 +1,19 @@
 'use client';
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import Select from 'react-select';
 import { IoSaveOutline } from "react-icons/io5";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { IoMdArrowBack } from "react-icons/io";
 
-//  type Course {
-    //     ID: String,
-    //     Name: String,
-    //     Type: String,
-    //     InstructorName: String,
-    //     InstructorId: String, 
-    //     TaList: Array,
-    // }
+type Course = {
+        ID: String,
+        Name: String,
+        Type: String,
+        InstructorName: String,
+        InstructorID: String, 
+        TaList: Array<string>,
+}
 
 // Create base form, figure out how to get list of Ta Names - probably create new endpoint
 export default function EditCourse({ params }){
@@ -26,15 +26,16 @@ export default function EditCourse({ params }){
     let [selectedTAs, setSelectedTAs] = useState([]);
     let [loading, setLoading] = useState(false);
 
-    let [course, setCourse] = useState();
+    let [course, setCourse] = useState<Course>();
     const baseUrl = "http://localhost:8080";
 
     let [taList, setTaList] = useState([
         { value: 'chocolate', label: 'Chocolate' },
         { value: 'strawberry', label: 'Strawberry' },
         { value: 'vanilla', label: 'Vanilla' }
-    ]);
-    let[professorList, setProfessorList] = useState([
+    ]);   
+
+    let [professorList, setProfessorList] = useState([
         { value: 'chocolate', label: 'Chocolate' },
         { value: 'strawberry', label: 'Strawberry' },
         { value: 'vanilla', label: 'Vanilla' }
@@ -55,15 +56,17 @@ export default function EditCourse({ params }){
         }
     };
 
-    const fetchCourse = async (courseId) => {
+    const fetchCourse = async (courseId: string) => {
         try {
-            const response = await axios.get(`${baseUrl}/courses/${courseId}`);
-            setCourse(response.data);
-            setName(course.Name);
-            setType(course.Type);
-            setInstructorName(course.InstructorName);
-            setInstructorId(course.InstructorId);
-            setSelectedTAs(course.TaList);
+            await axios.get(`${baseUrl}/courses/${courseId}`).then((res: AxiosResponse) => {
+                const courseData = res.data; 
+                setCourse(courseData); 
+                setName(courseData?.Name || ""); 
+                setType(courseData?.Type || "");
+                setInstructorName(courseData?.InstructorName || "");
+                setInstructorId(courseData?.InstructorId || "");
+                setSelectedTAs(courseData?.TaList || []);
+            });
         } catch (error) {
             console.error('Error fetching course by ID:', error);
             throw error; 
@@ -143,9 +146,16 @@ export default function EditCourse({ params }){
             name !== course.Name &&
             type !== course.Type &&
             instructorName !== course.InstructorName &&
-            instructorId !== course.InstructorId &&
+            instructorId !== course.InstructorID &&
             JSON.stringify(selectedTAs) !== JSON.stringify(course.TaList)
         );
+    };
+
+    const mapTaList = (taIds: string[]) => {
+        return taIds.map(taId => {
+            const ta = taList.find(ta => ta.value === taId);
+            return ta ? ta : null; 
+        }).filter(ta => ta !== null); 
     };
 
     return (
@@ -161,7 +171,7 @@ export default function EditCourse({ params }){
 
                     <label className="mt-5 text-lg font-extralight max-[500px]:mt-7">Professor</label>
                     <Select
-                        closeMenuOnSelect={false}
+                        closeMenuOnSelect={true}
                         options={professorList}
                         defaultValue={ {value: course.InstructorID, label: course.InstructorName}}
                         onChange={handleProfessorChange}
@@ -172,7 +182,7 @@ export default function EditCourse({ params }){
 
                     <label className="mt-5 text-lg font-extralight max-[500px]:mt-7">Class Type</label>
                     <Select
-                        closeMenuOnSelect={false}
+                        closeMenuOnSelect={true}
                         options={typeList}
                         onChange={handleTypeChange}
                         className="mt-1 w-[20vw] max-[500px]:w-[55vw]"
@@ -185,8 +195,8 @@ export default function EditCourse({ params }){
                     <Select
                         closeMenuOnSelect={false}
                         isMulti
-                        options={taList}
-                        defaultValue={Courses.TaList}
+                        options={typeList}
+                        defaultValue={mapTaList(course.TaList)}
                         onChange={handleTAChange}
                         className="mt-1 w-[20vw] max-[500px]:w-[55vw]"
                         required
