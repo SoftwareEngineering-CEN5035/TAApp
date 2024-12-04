@@ -43,26 +43,26 @@ const SignUp = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFAF1] flex items-center justify-center">
+    <div className="min-h-screen w-screen bg-gradient-to-br from-blue-50 to-blue-200 flex items-center justify-center">
       <ToastContainer />
-      <div className="bg-white shadow-lg rounded-lg max-w-md w-full p-8">
-        <h1 className="text-3xl font-bold text-center text-black mb-6">
-          Sign Up
+      <div className="bg-white shadow-2xl rounded-lg max-w-md w-full p-10">
+        <h1 className="text-4xl font-bold text-center text-gray-800 mb-8">
+          Create Your Account
         </h1>
         <form className="space-y-6" onSubmit={handleSignUp}>
           <div>
             <label
               htmlFor="email"
-              className="block mb-2 font-medium text-black"
+              className="block mb-2 text-sm font-semibold text-gray-700"
             >
-              <Mail className="inline-block w-5 h-5 mr-2" />
-              Email
+              <Mail className="inline-block w-5 h-5 mr-2 text-gray-500" />
+              Email Address
             </label>
             <input
               id="email"
               type="email"
               required
-              className="w-full p-3 border border-gray-300 text-black rounded-md focus:ring-purple-500 focus:border-purple-500"
+              className="w-full p-4 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500 transition ease-in-out duration-150"
               placeholder="example@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -71,16 +71,16 @@ const SignUp = () => {
           <div>
             <label
               htmlFor="password"
-              className="block mb-2 font-medium text-black"
+              className="block mb-2 text-sm font-semibold text-gray-700"
             >
-              <Lock className="inline-block w-5 h-5 mr-2" />
+              <Lock className="inline-block w-5 h-5 mr-2 text-gray-500" />
               Password
             </label>
             <input
               id="password"
               type="password"
               required
-              className="w-full p-3 border border-gray-300 text-black rounded-md focus:ring-purple-500 focus:border-purple-500"
+              className="w-full p-4 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500 transition ease-in-out duration-150"
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -88,16 +88,17 @@ const SignUp = () => {
           </div>
           <button
             type="submit"
-            className="w-full bg-lightblue text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-purple-700 transition duration-300"
+            className="w-full flex items-center justify-center bg-blue-600 text-white px-6 py-3 rounded-lg text-lg font-medium hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-all duration-200 shadow-md"
           >
-            <UserPlus className="inline-block w-5 h-5 mr-2" />
+            <UserPlus className="w-5 h-5 mr-2" />
             Sign Up
           </button>
         </form>
-        <div className="mt-4 text-center">
-          <p className="text-gray-600">
-            <Link href="/login" className="text-blue-500 hover:underline">
-              Login here
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            Already have an account?{" "}
+            <Link href="/login" className="text-blue-600 hover:underline font-semibold">
+              Log in here
             </Link>
           </p>
         </div>
