@@ -66,7 +66,6 @@ const NewUserWelcome = () => {
         } catch (error) {
           console.error("Error checking user document:", error);
         }
-
       } else {
         router.push("/login");
       }
