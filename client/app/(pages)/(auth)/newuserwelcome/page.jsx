@@ -66,6 +66,7 @@ const NewUserWelcome = () => {
         } catch (error) {
           console.error("Error checking user document:", error);
         }
+
       } else {
         router.push("/login");
       }
@@ -117,34 +118,49 @@ const NewUserWelcome = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="min-h-screen w-screen bg-gradient-to-br from-blue-50 to-blue-200 flex items-center justify-center px-4">
       <ToastContainer />
-      <div className="bg-white shadow-lg rounded-lg max-w-md w-full p-8">
-        <h1 className="text-2xl font-bold mb-4 text-center">Welcome!</h1>
-        <form className="space-y-4" onSubmit={handleSubmit}>
+      <div className="bg-white shadow-2xl rounded-lg max-w-md w-full p-10">
+        <h1 className="text-4xl font-bold text-center text-gray-800 mb-8">
+          Welcome!
+        </h1>
+        <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
-            <label className="block mb-2">Name</label>
+            <label
+              htmlFor="name"
+              className="block mb-2 text-sm font-semibold text-gray-700"
+            >
+              Name
+            </label>
             <input
+              id="name"
               type="text"
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="w-full p-4 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500 transition ease-in-out duration-150"
               placeholder="Your Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </div>
           <div>
-            <label className="block mb-2">Role</label>
+            <label
+              htmlFor="role"
+              className="block mb-2 text-sm font-semibold text-gray-700"
+            >
+              Role
+            </label>
             <Select
               id="accountType"
               instanceId="accountTypeSelect"
               options={roleOptions}
               value={roleOptions.find((option) => option.value === role)}
               onChange={handleSelectChange}
+              className="basic-multi-select"
+              classNamePrefix="select"
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded-md"
+            className="w-full flex items-center justify-center bg-blue-600 text-white px-6 py-3 rounded-lg text-lg font-medium hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-all duration-200 shadow-md"
           >
             Submit
           </button>
