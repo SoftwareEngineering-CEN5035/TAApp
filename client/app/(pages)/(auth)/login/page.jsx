@@ -33,13 +33,13 @@ const Login = () => {
           case "TA":
             router.push("/TADashboard");
             break;
-          case "Teacher":
-            router.push("/teacherDashboard");
+          case "Instructor":
+            router.push("/InstructorDashboard");
             break;
-          case "TA Committee Member":
+          case "Committee":
             router.push("/committeeDashboard");
             break;
-          case "Department Staff":
+          case "Department":
             router.push("/staffDashboard");
             break;
           default:
@@ -151,7 +151,10 @@ const Login = () => {
           </button>
           <p className="text-sm text-gray-600 mt-4">
             Don't have an account?{" "}
-            <Link href="/signup" className="text-blue-600 hover:underline font-semibold">
+            <Link
+              href="/signup"
+              className="text-blue-600 hover:underline font-semibold"
+            >
               Sign up here
             </Link>
           </p>

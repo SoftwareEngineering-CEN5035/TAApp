@@ -49,17 +49,17 @@ const NewUserWelcome = () => {
                 case "TA":
                   router.push("/TADashboard");
                   break;
-                case "Teacher":
-                  router.push("/teacherDashboard");
+                case "Instructor":
+                  router.push("/InstructorDashboard");
                   break;
-                case "TA Committee Member":
+                case "Committee":
                   router.push("/committeeDashboard");
                   break;
-                case "Department Staff":
-                  router.push("/staffDashboard");
+                case "Department":
+                  router.push("/departmentDashboard");
                   break;
                 default:
-                  router.push("/dashboard"); // Fallback route
+                  router.push("/dispo"); // Fallback route
               }
             }
           }
@@ -102,7 +102,25 @@ const NewUserWelcome = () => {
       }
 
       toast.success("Signup successful!");
-      router.push("/dashboard");
+      console.log(role);
+      switch (role) {
+        case "Department":
+          router.push("/departmentdashboard");
+          break;
+        case "TA":
+          router.push("/tadashboard");
+          break;
+        case "Instructor":
+          router.push("/Instructordashboard");
+          break;
+        case "Committee":
+          router.push("/committeedashboard");
+          break;
+        // Add more roles here as needed
+        default:
+          router.push("/dispo"); // Default route if role is not recognized
+          break;
+      }
     } catch (error) {
       console.error(error);
       toast.error(error.message || "An error occurred");
@@ -111,9 +129,9 @@ const NewUserWelcome = () => {
 
   const roleOptions = [
     { value: "TA", label: "TA" },
-    { value: "TA Committee Member", label: "TA Committee Member" },
-    { value: "Teacher", label: "Teacher" },
-    { value: "Department Staff", label: "Department Staff" },
+    { value: "Committee", label: "Committee" },
+    { value: "Instructor", label: "Instructor" },
+    { value: "Department", label: "Department" },
   ];
 
   return (

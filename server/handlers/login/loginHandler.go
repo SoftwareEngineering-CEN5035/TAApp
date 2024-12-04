@@ -89,10 +89,10 @@ func Login(c echo.Context, repo *repository.Repository, authClient *auth.Client)
 }
 
 var validRoles = map[string]bool{
-	"TA":                  true,
-	"TA Committee Member": true,
-	"Teacher":             true,
-	"Department Staff":    true,
+	"TA":         true,
+	"Committee":  true,
+	"Instructor": true,
+	"Department": true,
 }
 
 func NewUserWelcome(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
