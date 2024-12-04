@@ -114,7 +114,8 @@ export default function CreateCourse(){
     }
 
     const handleBackButton = () => {
-        router.push("/departmentDashboard")
+        let item = localStorage.getItem("previousDashboardItem");
+        router.push(`/departmentDashboard/${item}`)
     }
 
     return (

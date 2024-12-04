@@ -134,7 +134,8 @@ export default function EditCourse({ params }){
     }
 
     const handleBackButton = () => {
-        router.push("/departmentDashboard")
+        let item = localStorage.getItem("previousDashboardItem");
+        router.push(`/departmentDashboard/${item}`);
     }
 
     const isFormChanged = () => {

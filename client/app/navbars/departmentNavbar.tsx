@@ -62,6 +62,11 @@ const DepartmentNavbar = ({ setSelectedPage, selectedPage }) => {
     }
   };
 
+  const handleNavbarClick = (page: string) => {
+	setSelectedPage(page);
+	localStorage.setItem('previousDashboardItem', page);
+  }
+
   return (
     <nav
       className={`sticky top-0 w-full overflow-hidden h-[10vh] ${navbarHeight} bg-blue-300 border-b-[1px] border-black z-50 transition-all duration-300`}
@@ -79,7 +84,7 @@ const DepartmentNavbar = ({ setSelectedPage, selectedPage }) => {
                       className={`font-bold text-lg text-black ${
                         selectedPage === "application" ? "underline decoration-white" : ""
                       }`}
-                      onClick={() => setSelectedPage("application")}
+                      onClick={() => handleNavbarClick("application")}
                     >
                       Applications
                     </div>
@@ -87,7 +92,7 @@ const DepartmentNavbar = ({ setSelectedPage, selectedPage }) => {
                   className={`font-bold text-lg text-black ${
                     selectedPage === "course" ? "underline decoration-white" : ""
                   }`}
-                  onClick={() => setSelectedPage("course")}
+                  onClick={() => handleNavbarClick("course")}
                 >
                   Courses
                 </div>
@@ -132,7 +137,7 @@ const DepartmentNavbar = ({ setSelectedPage, selectedPage }) => {
                   className={`font-bold text-lg text-black py-2 ${
                     selectedPage === "application"  ? "underline decoration-white" : ""
                   }`}
-				  onClick={() => { closeMenu(); setSelectedPage("application"); }}
+				  onClick={() => { closeMenu(); handleNavbarClick("application"); }}
                 >
                   Application
                 </div>
@@ -140,7 +145,7 @@ const DepartmentNavbar = ({ setSelectedPage, selectedPage }) => {
                   className={`font-bold text-lg text-black py-2 ${
                     selectedPage === "course" ? "underline decoration-white" : ""
                   }`}
-				  onClick={() => { closeMenu(); setSelectedPage("course"); }}
+				  onClick={() => { closeMenu(); handleNavbarClick("course"); }}
                 >
                   Course
                 </div>

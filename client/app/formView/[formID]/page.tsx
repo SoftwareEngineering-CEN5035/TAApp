@@ -18,6 +18,8 @@ type Application = {
 	Status: string;
 }
 
+// Todo: Fix and create API endpoints
+
 function PDFView({ file, onClose }){
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -93,7 +95,7 @@ export default function FormView({ params }) {
     }
 
     const handleBackButton = () => {
-        router.push("/departmentDashboard")
+        router.push(`/departmentDashboard/application`)
     }
 
     return (

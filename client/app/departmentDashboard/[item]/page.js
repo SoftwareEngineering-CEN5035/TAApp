@@ -1,12 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import DepartmentNavbar from '../navbars/departmentNavbar';
-import Courses from './pagesDirectory/courses';
-import Applications from './pagesDirectory/applications';
+import DepartmentNavbar from '../../navbars/departmentNavbar';
+import Courses from '../pagesDirectory/courses';
+import Applications from '../pagesDirectory/applications';
 
-const DashboardPage = () => {
-  const [selectedPage, setSelectedPage] = useState('course'); 
+const DashboardPage = ({params}) => {
+  const item = params.item;
+  const [selectedPage, setSelectedPage] = useState(item); 
+
+  localStorage.setItem('previousDashboardItem', item);
 
   // useEffect(() => {
   //   const authToken = localStorage.getItem('authToken');
