@@ -22,9 +22,50 @@ const NewUserWelcome = () => {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         setIsLoading(false);
+
+        // Check if user document exists
+        try {
+          const response = await fetch(
+            "http://localhost:9000/checkUserDocument",
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("Token")}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (response.ok) {
+            const { exists, role } = await response.json();
+            if (exists) {
+              console.log(`User role: ${role}`);
+
+              // Implement switch-case routing based on role
+              switch (role) {
+                case "TA":
+                  router.push("/TADashboard");
+                  break;
+                case "Teacher":
+                  router.push("/teacherDashboard");
+                  break;
+                case "TA Committee Member":
+                  router.push("/committeeDashboard");
+                  break;
+                case "Department Staff":
+                  router.push("/staffDashboard");
+                  break;
+                default:
+                  router.push("/dashboard"); // Fallback route
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error checking user document:", error);
+        }
       } else {
         router.push("/login");
       }
