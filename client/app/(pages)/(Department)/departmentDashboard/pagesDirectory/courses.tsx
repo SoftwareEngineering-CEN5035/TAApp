@@ -83,7 +83,7 @@ export default function Courses(){
         ]
     )
 
-    const baseUrl = 'http://localhost:8080'
+    const baseUrl = 'http://localhost:9000'
 
     const fetchCourses = async () => {
         try {

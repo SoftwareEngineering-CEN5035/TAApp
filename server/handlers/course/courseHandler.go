@@ -35,15 +35,15 @@ func AuthUser(ctx context.Context, tokenString string, repo *repository.Reposito
 func GetCoursesByTA(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
 	ctx := context.Background()
 
-	authHeader := c.Request().Header.Get("Authorization")
-	if authHeader == "" {
-		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
-	}
-	tokenString := authHeader[len("Bearer "):]
-	isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
-	if !isAuth {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
-	}
+	// authHeader := c.Request().Header.Get("Authorization")
+	// if authHeader == "" {
+	// 	return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
+	// }
+	// tokenString := authHeader[len("Bearer "):]
+	// isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
+	// if !isAuth {
+	// 	return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
+	// }
 
 	taID := c.Param("id")
 	if taID == "" {
@@ -89,21 +89,22 @@ func UpdateCourse(c echo.Context, repo *repository.Repository, authClient *auth.
 	var course models.Course
 	ctx := context.Background()
 
-	authHeader := c.Request().Header.Get("Authorization")
-	if authHeader == "" {
-		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
-	}
-	tokenString := authHeader[len("Bearer "):]
-	isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
+	// authHeader := c.Request().Header.Get("Authorization")
+	// if authHeader == "" {
+	// 	return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
+	// }
+	// tokenString := authHeader[len("Bearer "):]
+	// isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
 
-	if !isAuth {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
-	}
+	// if !isAuth {
+	// 	return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
+	// }
 
 	// Bind json data to course object
 	if err := c.Bind(&course); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}
+
 
 	// Update course object
 	err := repo.UpdateCourse(ctx, &course)
@@ -111,23 +112,22 @@ func UpdateCourse(c echo.Context, repo *repository.Repository, authClient *auth.
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 	return c.JSON(http.StatusCreated, course)
-
 }
 
 // Gets All Courses
 func GetAllCourses(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
 	ctx := context.Background()
 
-	authHeader := c.Request().Header.Get("Authorization")
-	if authHeader == "" {
-		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
-	}
-	tokenString := authHeader[len("Bearer "):]
-	isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
+	// authHeader := c.Request().Header.Get("Authorization")
+	// if authHeader == "" {
+	// 	return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
+	// }
+	// tokenString := authHeader[len("Bearer "):]
+	// isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
 
-	if !isAuth {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
-	}
+	// if !isAuth {
+	// 	return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
+	// }
 
 	courseList, err := repo.GetAllCourses(ctx)
 	if err != nil {
@@ -140,16 +140,16 @@ func GetAllCourses(c echo.Context, repo *repository.Repository, authClient *auth
 func GetUserByRole(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
 	ctx := context.Background()
 
-	authHeader := c.Request().Header.Get("Authorization")
-	if authHeader == "" {
-		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
-	}
-	tokenString := authHeader[len("Bearer "):]
-	isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
+	// authHeader := c.Request().Header.Get("Authorization")
+	// if authHeader == "" {
+	// 	return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
+	// }
+	// tokenString := authHeader[len("Bearer "):]
+	// isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
 
-	if !isAuth {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
-	}
+	// if !isAuth {
+	// 	return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
+	// }
 
 	role := c.Param("role")
 	if role == "" {

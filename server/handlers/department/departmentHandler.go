@@ -8,6 +8,7 @@ import (
 
 	"firebase.google.com/go/auth"
 	"github.com/labstack/echo/v4"
+    "github.com/google/uuid"
 )
 
 func AuthUser(ctx context.Context, tokenString string, repo *repository.Repository, authClient *auth.Client) (bool, string) {
@@ -22,7 +23,7 @@ func AuthUser(ctx context.Context, tokenString string, repo *repository.Reposito
 		return false, "User not found"
 	}
 
-	if user.Role != "Department Staff" {
+	if user.Role != "Department" {
 		return false, "User is not proper role"
 	}
 
@@ -33,21 +34,23 @@ func CreateCourseHandler(c echo.Context, repo *repository.Repository, authClient
 	ctx := context.Background()
 	var course models.Course
 
-	authHeader := c.Request().Header.Get("Authorization")
-	if authHeader == "" {
-		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
-	}
-	tokenString := authHeader[len("Bearer "):]
-	isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
+	// authHeader := c.Request().Header.Get("Authorization")
+	// if authHeader == "" {
+	// 	return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
+	// }
+	// tokenString := authHeader[len("Bearer "):]
+	// isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
 
-	if !isAuth {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
-	}
+	// if !isAuth {
+	// 	return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
+	// }
 
 	// Bind json data to course object
 	if err := c.Bind(&course); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}
+    customID := uuid.New().String()
+    course.ID = customID
 
 	// Save course object
 	err := repo.CreateCourse(ctx, &course)
@@ -60,16 +63,16 @@ func CreateCourseHandler(c echo.Context, repo *repository.Repository, authClient
 func DeleteCourse(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
 	ctx := context.Background()
 
-	authHeader := c.Request().Header.Get("Authorization")
-	if authHeader == "" {
-		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
-	}
-	tokenString := authHeader[len("Bearer "):]
-	isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
+	// authHeader := c.Request().Header.Get("Authorization")
+	// if authHeader == "" {
+	// 	return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
+	// }
+	// tokenString := authHeader[len("Bearer "):]
+	// isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
 
-	if !isAuth {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
-	}
+	// if !isAuth {
+	// 	return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
+	// }
 
 	courseID := c.Param("id")
 	if courseID == "" {
@@ -116,21 +119,21 @@ func RemoveTAFromCourse(c echo.Context, repo *repository.Repository, authClient 
 }
 
 // Returns all forms
-func GetForms(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
+func GetNewForms(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
 	ctx := context.Background()
 
-	authHeader := c.Request().Header.Get("Authorization")
-	if authHeader == "" {
-		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
-	}
-	tokenString := authHeader[len("Bearer "):]
-	isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
+	// authHeader := c.Request().Header.Get("Authorization")
+	// if authHeader == "" {
+	// 	return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
+	// }
+	// tokenString := authHeader[len("Bearer "):]
+	// isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
 
-	if !isAuth {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
-	}
+	// if !isAuth {
+	// 	return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
+	// }
 
-	formsList, err := repo.GetAllForms(ctx)
+	formsList, err := repo.GetNewForms(ctx)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to retrieve forms"})
 	}
@@ -142,16 +145,16 @@ func GetForms(c echo.Context, repo *repository.Repository, authClient *auth.Clie
 func GetFormById(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
 	ctx := context.Background()
 
-	authHeader := c.Request().Header.Get("Authorization")
-	if authHeader == "" {
-		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
-	}
-	tokenString := authHeader[len("Bearer "):]
-	isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
+	// authHeader := c.Request().Header.Get("Authorization")
+	// if authHeader == "" {
+	// 	return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
+	// }
+	// tokenString := authHeader[len("Bearer "):]
+	// isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
 
-	if !isAuth {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
-	}
+	// if !isAuth {
+	// 	return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
+	// }
 
 	formID := c.Param("id")
 	if formID == "" {
@@ -224,6 +227,60 @@ func GetFormsByTA(c echo.Context, repo *repository.Repository, authClient *auth.
 	}
 
 	forms, err := repo.FetchFormsByTaID(ctx, taID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Forms not found"})
+	}
+
+	return c.JSON(http.StatusOK, forms)
+}
+
+func UpdateDepartmentForm(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
+	var form models.Form
+	ctx := context.Background()
+
+	// authHeader := c.Request().Header.Get("Authorization")
+	// if authHeader == "" {
+	// 	return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
+	// }
+	// tokenString := authHeader[len("Bearer "):]
+	// isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
+
+	// if !isAuth {
+	// 	return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
+	// }
+
+	// Bind json data to form object
+	if err := c.Bind(&form); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+	}
+
+	// Update form object
+	err := repo.UpdateFormDepartment(ctx, &form)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+	return c.JSON(http.StatusCreated, form)
+}
+
+func GetDepartmentFormsByA(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
+	ctx := context.Background()
+
+	// authHeader := c.Request().Header.Get("Authorization")
+	// if authHeader == "" {
+	// 	return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
+	// }
+	// tokenString := authHeader[len("Bearer "):]
+	// isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
+	// if !isAuth {
+	// 	return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
+	// }
+
+	taID := c.Param("taId")
+	if taID == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "TA ID is required"})
+	}
+
+	forms, err := repo.FetchDepartmentFormsByTaID(ctx, taID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Forms not found"})
 	}

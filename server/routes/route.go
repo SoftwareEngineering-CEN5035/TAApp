@@ -43,8 +43,8 @@ func RegisterRoutes(e *echo.Echo, repo *repository.Repository, authClient *auth.
 	e.PATCH("/approveTaForCourse", func(c echo.Context) error {
 		return department.ApproveTaForCourse(c, repo, authClient)
 	})
-	e.GET("/forms", func(c echo.Context) error {
-		return department.GetForms(c, repo, authClient)
+	e.GET("/newForms", func(c echo.Context) error {
+		return department.GetNewForms(c, repo, authClient)
 	})
 	e.GET("/courses", func(c echo.Context) error {
 		return course.GetAllCourses(c, repo, authClient)
@@ -52,8 +52,14 @@ func RegisterRoutes(e *echo.Echo, repo *repository.Repository, authClient *auth.
 	e.GET("/courses/:id", func(c echo.Context) error {
 		return course.GetCoursesById(c, repo, authClient)
 	})
+	e.GET("/departmentForms/:taId", func(c echo.Context) error {
+		return department.GetDepartmentFormsByA(c, repo, authClient)
+	})
 	e.PATCH("/courses", func(c echo.Context) error {
 		return course.UpdateCourse(c, repo, authClient)
+	})
+	e.PATCH("/forms", func(c echo.Context) error {
+		return department.UpdateDepartmentForm(c, repo, authClient)
 	})
 	e.GET("/coursesByTA/:id", func(c echo.Context) error {
 		return course.GetCoursesByTA(c, repo, authClient)

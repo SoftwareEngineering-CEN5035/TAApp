@@ -27,7 +27,7 @@ export default function EditCourse({ params }){
     let [loading, setLoading] = useState(false);
 
     let [course, setCourse] = useState<Course>();
-    const baseUrl = "http://localhost:8080";
+    const baseUrl = "http://localhost:9000";
 
     let [taList, setTaList] = useState([
         { value: 'chocolate', label: 'Chocolate' },
@@ -111,10 +111,10 @@ export default function EditCourse({ params }){
         }
 
         try {
-            const response = await axios.patch(`${baseUrl}/courses`, editedData);
-    
-            console.log('Course created successfully:', response.data);
-            router.push(`/departmentDashboard`);
+            await axios.patch(`${baseUrl}/courses`, editedData).then((res : AxiosResponse) => {
+                console.log('Course created successfully:', res.data);
+                router.push(`/departmentDashboard/course`);
+            });
         } catch (error) {
             console.error('Error creating course:', error);
             alert('Failed to create course. Please try again.');
@@ -137,8 +137,7 @@ export default function EditCourse({ params }){
     }
 
     const handleBackButton = () => {
-        let item = localStorage.getItem("previousDashboardItem");
-        router.push(`/departmentDashboard/${item}`);
+        router.push(`/departmentDashboard/course`);
     }
 
     const isFormChanged = () => {

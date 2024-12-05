@@ -6,14 +6,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { IoMdArrowBack } from "react-icons/io";
 
-//  type Course {
-    //     ID: String,
-    //     Name: String,
-    //     Type: String,
-    //     InstructorName: String,
-    //     InstructorId: String, 
-    //     TaList: Array,
-    // }
+type CoursePostRequest = {
+    Name: String,
+    Type: String,
+    InstructorName: String,
+    InstructorID: String, 
+    TaList: Array<string>,
+}
 
 // Create base form, figure out how to get list of Ta Names - probably create new endpoint
 export default function CreateCourse(){
@@ -23,7 +22,7 @@ export default function CreateCourse(){
     let [instructorName, setInstructorName] = useState('');
     let [instructorId, setInstructorId] = useState('');
     let [selectedTAs, setSelectedTAs] = useState([]);
-    const baseUrl = "http://localhost:8080";
+    const baseUrl = "http://localhost:9000";
 
     let [taList, setTaList] = useState([
         { value: 'chocolate', label: 'Chocolate' },
@@ -79,7 +78,7 @@ export default function CreateCourse(){
         if(name.trim().length === 0 || type.trim().length === 0 || instructorName.trim().length === 0 || selectedTAs.length === 0){
             return alert('Please Fill Inputs')
         }
-        const data = {
+        const data: CoursePostRequest = {
             Name: name,
             Type: type,
             InstructorName: instructorName,
@@ -91,7 +90,7 @@ export default function CreateCourse(){
             const response = await axios.post(`${baseUrl}/courses`, data);
     
             console.log('Course created successfully:', response.data);
-            router.push(`/departmentDashboard`);
+            router.push(`/departmentDashboard/course`);
         } catch (error) {
             console.error('Error creating course:', error);
             alert('Failed to create course. Please try again.');
@@ -114,8 +113,7 @@ export default function CreateCourse(){
     }
 
     const handleBackButton = () => {
-        let item = localStorage.getItem("previousDashboardItem");
-        router.push(`/departmentDashboard/${item}`)
+        router.push(`/departmentDashboard/course`)
     }
 
     return (

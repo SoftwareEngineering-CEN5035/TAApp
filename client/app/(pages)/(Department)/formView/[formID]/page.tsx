@@ -39,21 +39,11 @@ function PDFView({ file, onClose }){
 export default function FormView({ params }) {
     const formId = params.formID;
     const router = useRouter();
-    let [form, setForm] = useState<Application>(
-        {
-            ID: 'dummy',
-            UploaderID: 'dummy',
-            UploaderName: 'dummy',
-            CourseAppliedID: 'dummy',
-            CourseName: 'dummy',
-            FileURL: 'https://docs.google.com/document/d/e/2PACX-1vTiCAOwkN2n_ELrIaDJvhlmiBR2msW8nrSszNsMCHaY7NOfm8ZbZKIgniWc_f-GgQlM2svvYBLnhPeu/pub?embedded=true',
-            Status: 'dummy'
-        }
-    );
+    let [form, setForm] = useState<Application>();
     let [pdfViewOpen, setPDFViewOpen] = useState(false);
-    let [loading, setLoading] = useState<boolean>(true);
+    let [loading, setLoading] = useState<boolean>(false);
 
-    let baseUrl = "http://localhost8080";
+    let baseUrl = "http://localhost:9000";
 
     const fetchFormById = async () => {
         try {
@@ -72,7 +62,7 @@ export default function FormView({ params }) {
     };
 
     useEffect(() => {
-        //fetchFormById();
+        fetchFormById();
     }, [fetchFormById]);
 
     const updateForm = async ( update: string) => {
@@ -86,7 +76,7 @@ export default function FormView({ params }) {
                 FileURL: form.FileURL,
                 Status: update
             }
-            await axios.patch(`${baseUrl}/forms/${formId}`, data).then(() => {
+            await axios.patch(`${baseUrl}/forms`, data).then(() => {
                 router.push(`/departmentDashboard`);
             });
         }catch(error) {
@@ -102,6 +92,9 @@ export default function FormView({ params }) {
         <div className="h-[100%] w-[100%] bg-slate-50 flex flex-col gap-y-4 justify-center items-center">
             <IoMdArrowBack className="absolute max-[500px]:left-5 text-black text-3xl left-10 top-10 hover:cursor-pointer hover: hover:text-gray-700" onClick={handleBackButton}/>
             <h1 className="text-[#0e141b] max-[500px]:mr-[0vw] tracking-light text-[32px] font-bold leading-tight min-w-72 mr-[57vw]">Review TA Application</h1>
+            {loading && <h1>Loading....</h1>}
+            {!loading && 
+            <>
             <div className="h-[70%] w-[80%] mt-5">
                 <div className="flex flex-row border-t border-t-[#d0dbe7] py-5 gap-x-4 max-[500px]:gap-x-14">
                     <p className="text-[#4e7297] text-sm font-normal leading-normal w-[10vw] max-[500px]:w-[25vw] max-[500px]:text-lg">Form ID</p>
@@ -128,10 +121,12 @@ export default function FormView({ params }) {
                     <p onClick={handlePDFView} className="text-blue-500 hover:cursor-pointer hover:text-blue-400 underline decoration-blue-500 hover:decoration-blue-400 text-sm font-normal leading-normal max-[500px]:text-lg">Open Resume</p>
                 </div>
             </div>
-            <div className="w-[20%] max-[500px]:w-[30%] mt-[-10vh] h-[10%] flex flex-col gap-y-2 items-center justify-center">
-                <button onClick={() => updateForm('Approved')} className="bg-green-500 max-[500px]:w-[80%] w-[30%] h-[3vh] hover:bg-green-600 text-white text-center items-center flex justify-center rounded-lg"><FaCheck/></button>
-                <button onClick={() => updateForm('Rejected')} className="text-black max-[500px]:bg-red-500 max-[500px]:w-[80%] hover:bg-red-500 text-center w-[30%] h-[3vh] items-center flex justify-center rounded-lg"><FaXmark /></button>
+            <div className="w-[20%] max-[500px]:w-[40%] mt-[-10vh] h-[10%] flex flex-col gap-y-2 items-center justify-center">
+                <button onClick={() => updateForm('Pending Committee Auth')} className="bg-green-500 max-[500px]:w-[80%] w-[80%] h-[3vh] hover:bg-green-600 text-white text-center items-center flex justify-center rounded-lg"><FaCheck/></button>
+                <button onClick={() => updateForm('Rejected')} className="text-black bg-red-500 max-[500px]:w-[80%] hover:bg-red-600 text-center w-[80%] h-[3vh] items-center flex justify-center rounded-lg"><FaXmark /></button>
             </div>
+            </>
+            }
             {pdfViewOpen && <PDFView file={form.FileURL} onClose={handlePDFView}/>}
         </div>
     )

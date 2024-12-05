@@ -26,12 +26,12 @@ export default function Applications(){
     let [taFilter, setTAFilter] = useState('');
     let [taList, setTAList] = useState<SelectOption[]>([]);
     let [applications, setApplications] = useState<Array<Application>>([]);
-    const baseUrl = 'http://localhost:8080';
+    const baseUrl = 'http://localhost:9000';
 
     const fetchForms = async () => {
         try {
             setLoading(true)
-            await axios.get(`${baseUrl}/forms`).then((res: AxiosResponse) => {
+            await axios.get(`${baseUrl}/newForms`).then((res: AxiosResponse) => {
           setApplications(res.data);
           });
         } catch (error) {
