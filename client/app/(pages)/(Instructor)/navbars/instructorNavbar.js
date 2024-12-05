@@ -1,6 +1,6 @@
 import { FaBars, FaTimes } from "react-icons/fa";
 import { useState, useEffect } from "react";
-import { auth } from "../_lib/firebase";
+import { auth } from "../../../_lib/firebase";
 import { signOut } from "firebase/auth"; 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
