@@ -7,9 +7,9 @@ const TAApplicationPage = () => {
   const router = useRouter();
   const [formData, setFormData] = useState({
     hasPriorExperience: false,
-    preferredCourse: '', // Single string instead of an array
-    fileURL: '',  
+    preferredCourse: '', // Single string
   });
+  const [file, setFile] = useState(null); // State to hold the uploaded file
   const [availableCourses, setAvailableCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -31,7 +31,6 @@ const TAApplicationPage = () => {
         });
         if (!response.ok) throw new Error('Failed to fetch courses');
         const data = await response.json();
-        console.log(data)
         setAvailableCourses(data);
       } catch (err) {
         setError('Failed to load courses');
@@ -46,36 +45,35 @@ const TAApplicationPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-  
+
+    if (!file) {
+      setError('Please upload your CV.');
+      return;
+    }
+
     try {
       const token = localStorage.getItem('Token');
-  
-      if (!formData.preferredCourse) {
-        setError('Please select a course to apply for.');
-        return;
-      }
-  
+      const formDataToSend = new FormData();
+      formDataToSend.append('hasPriorExperience', formData.hasPriorExperience);
+      formDataToSend.append('preferredCourse', formData.preferredCourse);
+      formDataToSend.append('file', file); // Add the file
+
       const response = await fetch('http://localhost:9000/ta/application', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          hasPriorExperience: formData.hasPriorExperience,
-          CourseAppliedID: formData.preferredCourse, // Correct field name for backend
-          fileURL: formData.fileURL,
-        }),
+        body: formDataToSend,
       });
-  
+
       if (!response.ok) throw new Error('Failed to submit application');
-  
+
       router.push('/ta/dashboard');
     } catch (err) {
       setError(err.message);
     }
   };
-  
+
   if (loading) return <div className="p-4">Loading...</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
 
@@ -108,12 +106,12 @@ const TAApplicationPage = () => {
               <label key={course.ID} className="flex items-center space-x-2">
                 <input
                   type="radio"
-                  name="preferredCourse" // Ensures all options are part of the same group
+                  name="preferredCourse"
                   checked={formData.preferredCourse === course.ID}
                   onChange={() =>
                     setFormData((prev) => ({
                       ...prev,
-                      preferredCourse: course.ID, // Store as a string
+                      preferredCourse: course.ID,
                     }))
                   }
                 />
@@ -125,16 +123,11 @@ const TAApplicationPage = () => {
 
         <div>
           <label className="block mb-2">
-            CV Upload URL:
+            Upload Your CV (PDF):
             <input
-              type="url"
-              value={formData.fileURL}  // Changed from cvUrl to fileURL
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  fileURL: e.target.value,  // Changed from cvUrl to fileURL
-                }))
-              }
+              type="file"
+              accept="application/pdf"
+              onChange={(e) => setFile(e.target.files[0])}
               className="border p-2 rounded w-full"
               required
             />

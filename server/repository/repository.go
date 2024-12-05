@@ -306,7 +306,7 @@ func (r *Repository) FetchCoursesByTaID(ctx context.Context, taID string) ([]mod
 	return courses, nil
 }
 func (r *Repository) CreateTAApplication(ctx context.Context, application *models.Form) error {
-	_, _, err := r.client.Collection("ta_applications").Add(ctx, application)
+	_, _, err := r.client.Collection("forms").Add(ctx, application)
 	if err != nil {
 		log.Printf("Failed to create TA application: %v", err)
 		return err
