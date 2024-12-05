@@ -1,8 +1,8 @@
 import { FaBars, FaTimes } from "react-icons/fa";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { auth } from "../_lib/firebase";
-import { signOut } from "firebase/auth"; 
+import { auth } from "../../../_lib/firebase";
+import { signOut } from "firebase/auth";
 import { usePathname } from "next/navigation";
 
 const DepartmentNavbar = ({ setSelectedPage, selectedPage }) => {
@@ -62,6 +62,11 @@ const DepartmentNavbar = ({ setSelectedPage, selectedPage }) => {
     }
   };
 
+  const handleNavbarClick = (page: string) => {
+    setSelectedPage(page);
+    localStorage.setItem("previousDashboardItem", page);
+  };
+
   return (
     <nav
       className={`sticky top-0 w-full overflow-hidden h-[10vh] ${navbarHeight} bg-blue-300 border-b-[1px] border-black z-50 transition-all duration-300`}
@@ -70,36 +75,36 @@ const DepartmentNavbar = ({ setSelectedPage, selectedPage }) => {
         <div className="justify-between flex space-x-8 items-center">
           {!isMobile && (
             <>
-				<div
-                      className={`font-bold text-2xl text-black`}
-                    >
-                      TA Application
-                    </div>
-                    <div
-                      className={`font-bold text-lg text-black ${
-                        selectedPage === "application" ? "underline decoration-white" : ""
-                      }`}
-                      onClick={() => setSelectedPage("application")}
-                    >
-                      Applications
-                    </div>
-                <div
-                  className={`font-bold text-lg text-black ${
-                    selectedPage === "course" ? "underline decoration-white" : ""
-                  }`}
-                  onClick={() => setSelectedPage("course")}
-                >
-                  Courses
-                </div>
-				<button
-                    onClick={handleSignOut}
-                    className={`font-bold text-lg text-black cursor-pointer absolute right-2 bg-red-300 hover:bg-red-200 h-[45px] rounded-lg w-[80px]${
-                      loading ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
-                    disabled={loading} // Disable button when loading
-                  >
-                    {loading ? "Signing Out..." : "Sign Out"}
-                  </button>
+              <div className={`font-bold text-2xl text-black`}>
+                TA Application
+              </div>
+              <div
+                className={`font-bold text-lg text-black ${
+                  selectedPage === "application"
+                    ? "underline decoration-white"
+                    : ""
+                }`}
+                onClick={() => handleNavbarClick("application")}
+              >
+                Applications
+              </div>
+              <div
+                className={`font-bold text-lg text-black ${
+                  selectedPage === "course" ? "underline decoration-white" : ""
+                }`}
+                onClick={() => handleNavbarClick("course")}
+              >
+                Courses
+              </div>
+              <button
+                onClick={handleSignOut}
+                className={`font-bold text-lg text-black cursor-pointer absolute right-2 bg-red-300 hover:bg-red-200 h-[45px] rounded-lg w-[80px]${
+                  loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+                disabled={loading} // Disable button when loading
+              >
+                {loading ? "Signing Out..." : "Sign Out"}
+              </button>
             </>
           )}
         </div>
@@ -128,34 +133,42 @@ const DepartmentNavbar = ({ setSelectedPage, selectedPage }) => {
                   className="cursor-pointer"
                 />
               </div>
-                <div
-                  className={`font-bold text-lg text-black py-2 ${
-                    selectedPage === "application"  ? "underline decoration-white" : ""
-                  }`}
-				  onClick={() => { closeMenu(); setSelectedPage("application"); }}
-                >
-                  Application
-                </div>
-                <div
-                  className={`font-bold text-lg text-black py-2 ${
-                    selectedPage === "course" ? "underline decoration-white" : ""
-                  }`}
-				  onClick={() => { closeMenu(); setSelectedPage("course"); }}
-                >
-                  Course
-                </div>
-                  <button
-                    onClick={() => {
-                      handleSignOut();
-                      closeMenu();
-                    }}
-                    className={`font-bold text-lg text-black w-3/5 mt-[3vh] text-center py-2 rounded-xl hover:bg-gray-400 cursor-pointer ${
-                      loading ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
-                    disabled={loading} // Disable button when loading
-                  >
-                    {loading ? "Signing Out..." : "Sign Out"}
-                  </button>
+              <div
+                className={`font-bold text-lg text-black py-2 ${
+                  selectedPage === "application"
+                    ? "underline decoration-white"
+                    : ""
+                }`}
+                onClick={() => {
+                  closeMenu();
+                  handleNavbarClick("application");
+                }}
+              >
+                Application
+              </div>
+              <div
+                className={`font-bold text-lg text-black py-2 ${
+                  selectedPage === "course" ? "underline decoration-white" : ""
+                }`}
+                onClick={() => {
+                  closeMenu();
+                  handleNavbarClick("course");
+                }}
+              >
+                Course
+              </div>
+              <button
+                onClick={() => {
+                  handleSignOut();
+                  closeMenu();
+                }}
+                className={`font-bold text-lg text-black w-3/5 mt-[3vh] text-center py-2 rounded-xl hover:bg-gray-400 cursor-pointer ${
+                  loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+                disabled={loading} // Disable button when loading
+              >
+                {loading ? "Signing Out..." : "Sign Out"}
+              </button>
             </div>
           </>
         )}

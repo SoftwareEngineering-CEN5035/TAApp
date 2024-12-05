@@ -8,7 +8,27 @@ import { RiDeleteBin5Line } from "react-icons/ri";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
-function CourseView({ course, onClose }){
+type Course = {
+  ID: string,
+  Name: string,
+  Type: string,
+  InstructorName: string,
+  InstructorID: string, 
+  TaList: Array<string>,
+  TaIDList: Array<string>,
+}
+
+type CourseViewProps = {
+  course: Course; 
+  onClose: () => void; 
+};
+
+type SelectOption = {
+  value: string; 
+  label: string;
+};
+
+function CourseView({ course, onClose }: CourseViewProps){
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-3/4 max-w-lg">
@@ -30,57 +50,38 @@ function CourseView({ course, onClose }){
 
 export default function Courses(){
     let [loading, setLoading] = useState(false);
-    let [course, selectedCourse] = useState();
+    let [course, selectedCourse] = useState<Course>();
     let [toggleView, setToggledView] = useState(false);
+    let [taList, setTaList] = useState<SelectOption[]>([]);
     let [taFilter, setTaFilter] = useState('');
     const router = useRouter();
-    let [courses, setCourses] = useState(
-        [
-            {
-                ID: "C001",
-                Name: "Introduction to Programming",
-                Type: "Core",
-                InstructorName: "Dr. John Doe",
-                InstructorId: "I001",
-                TaList: ["Alice Johnson", "Bob Smith"],
-              },
-              {
-                ID: "C002",
-                Name: "Data Structures and Algorithms",
-                Type: "Core",
-                InstructorName: "Dr. Jane Doe",
-                InstructorId: "I002",
-                TaList: ["Charlie Brown", "Dana White"],
-              },
-              {
-                ID: "C005",
-                Name: "Software Engineering",
-                Type: "Core",
-                InstructorName: "Dr. Peter Parker",
-                InstructorId: "I005",
-                TaList: ["Ivy Adams", "Jack Wilson"],
-              },
-        ]
-    )
+    let [courses, setCourses] = useState<Course[]>([]);
 
-    const baseUrl = 'http://localhost:8080'
+    const baseUrl = 'http://localhost:9000'
 
     const fetchCourses = async () => {
         try {
             setLoading(true)
-          const response = await axios.get(`${baseUrl}/courses`);
+          const response = await axios.get(`${baseUrl}/courses`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          });
           setCourses(response.data);
         } catch (error) {
           console.error("Error fetching courses:", error);
-          alert("Failed to fetch courses. Please try again later.");
         } finally {
           setLoading(false);
         }
     };
 
-    const fetchUsersByRole = async (role) => {
+    const fetchUsersByRole = async (role: string) => {
         try {
-            const response = await axios.get(`${baseUrl}/users/${role}`);
+            const response = await axios.get(`${baseUrl}/users/${role}`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("Token")}`,
+              },
+            });
             return response.data;
         } catch (error) {
             console.error('Error fetching users by role:', error);
@@ -88,37 +89,45 @@ export default function Courses(){
         }
     };
 
+    const fetchTAListData = async () => {
+      try {
+          const taResult = await fetchUsersByRole('TA');
+          setTaList([
+            { value: "Clear", label: "Clear" }, 
+            ...taResult.map(user => ({
+                value: user.ID,
+                label: user.Name
+            }))
+        ]);
+      } catch (error) {
+          console.error('Error fetching user roles:', error);
+      }
+  };
+
     useEffect(() => {
 
-    const fetchData = async () => {
-        try {
-            const taResult = await fetchUsersByRole('TA');
-            setTaList(taResult.map(user => ({
-                value: user.ID, 
-                label: user.Name
-            })));
-        } catch (error) {
-            console.error('Error fetching user roles:', error);
-        }
-    };
-
-    fetchData();
+    fetchTAListData();
     fetchCourses();
     
-    }, [fetchCourses]);
+    }, []);
 
-    const handleView = (course) => {
+    const handleView = (course: Course) => {
         setToggledView(true);
         selectedCourse(course);
       };
     
-    const handleEdit = (courseID) => {
+    const handleEdit = (courseID: string) => {
         router.push(`/editCourse/${courseID}`);
     };
 
-    const handleDelete = async (courseID) => {
+    const handleDelete = async (courseID: string) => {
+      console.log(courseID);
         try {
-            await axios.delete(`${baseUrl}/courses/${courseID}`);
+            await axios.delete(`${baseUrl}/courses/${courseID}`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("Token")}`,
+              },
+            });
             
             const updatedCourses = courses.filter((course) => course.ID !== courseID);
             setCourses(updatedCourses);
@@ -139,12 +148,21 @@ export default function Courses(){
         router.push('/createCourse');
     }
     
-    const handleTAChange = async (selectedOptions) => {
-        setTaFilter(selectedOptions);
+    const handleTAChange = async (selectedOptions: SelectOption) => {
+      if (!selectedOptions || selectedOptions.value === "Clear") {
+        setTaFilter('');
+        fetchCourses(); 
+        return;
+    }
+        setTaFilter(selectedOptions.value);
+        setLoading(true);
 
         try {
-            setLoading(true)
-          const response = await axios.get(`${baseUrl}/coursesByTA/:${taFilter}`);
+          const response = await axios.get(`${baseUrl}/coursesByTA/:${taFilter}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          });
           setCourses(response.data);
         } catch (error) {
           console.error("Error fetching courses:", error);
@@ -155,7 +173,7 @@ export default function Courses(){
     };
 
     return (
-        <div className="w-[100%] h-[100%] flex bg-slate-200 text-center items-center flex-col">
+        <div className="w-[100%] h-[100%] flex bg-slate-50 text-center items-center flex-col">
             {loading && <p className='text-black text-xl font-bold'>Loading...</p>}
             {!loading &&
             <>
@@ -177,7 +195,7 @@ export default function Courses(){
                 </tr>
                 </thead>
                 <tbody>
-                {courses.map((course) => (
+                {courses?.map((course) => (
                     <tr key={course.ID} className="hover:bg-gray-100">
                         <td className="border border-gray-400 px-4 py-2 max-[500px]:px-1">{course.ID}</td>
                         <td className="border border-gray-400 px-4 py-2 max-[500px]:px-1">{course.Type}</td>
@@ -207,7 +225,7 @@ export default function Courses(){
                 ))}
                 </tbody>
             </table>
-            <p className="text-black text-sm font-light ml-[75vw] mt-3">Displaying {courses.length} entries</p>
+            <p className="text-black text-sm font-light ml-[75vw] mt-3">Displaying {courses?.length} entries</p>
             {toggleView && <CourseView course={course} onClose={handleCloseView}/>}
             </>}
         </div>

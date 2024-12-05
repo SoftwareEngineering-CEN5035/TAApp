@@ -111,7 +111,6 @@ func UpdateCourse(c echo.Context, repo *repository.Repository, authClient *auth.
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 	return c.JSON(http.StatusCreated, course)
-
 }
 
 // Gets All Courses
