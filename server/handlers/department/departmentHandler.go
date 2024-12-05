@@ -2,6 +2,7 @@ package department
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"ta-manager-api/models"
 	"ta-manager-api/repository"
@@ -48,7 +49,7 @@ func CreateCourseHandler(c echo.Context, repo *repository.Repository, authClient
 	if err := c.Bind(&course); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}
-
+	fmt.Println("yo")
 	// Save course object
 	err := repo.CreateCourse(ctx, &course)
 	if err != nil {
@@ -192,14 +193,14 @@ func ApproveTaForCourse(c echo.Context, repo *repository.Repository, authClient 
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request data"})
 	}
 
-    if err := repo.UpdateFormStatusToApproved(ctx, approveReq.FormID); err != nil {
-        return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to approve form"})
-    }
+	if err := repo.UpdateFormStatusToApproved(ctx, approveReq.FormID); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to approve form"})
+	}
 
-    if err := repo.AddTaToCourse(ctx, approveReq.CourseID, approveReq.TaID); err != nil {
-        return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to add TA to course"})
-    }
+	if err := repo.AddTaToCourse(ctx, approveReq.CourseID, approveReq.TaID); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to add TA to course"})
+	}
 
-    return c.JSON(http.StatusOK, map[string]string{"message": "TA approved for course successfully"})
+	return c.JSON(http.StatusOK, map[string]string{"message": "TA approved for course successfully"})
 
 }

@@ -1,60 +1,85 @@
 package ta
 
 import (
-    "context"
-    "net/http"
-    "ta-manager-api/models"
-    "ta-manager-api/repository"
-    "time"
+	"context"
+	"fmt"
+	"net/http"
+	"ta-manager-api/models"
+	"ta-manager-api/repository"
 
-    "firebase.google.com/go/auth"
-    "github.com/labstack/echo/v4"
+	"firebase.google.com/go/auth"
+	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
 )
 
 func AuthUser(ctx context.Context, tokenString string, repo *repository.Repository, authClient *auth.Client) (bool, string) {
-    token, err := authClient.VerifyIDToken(ctx, tokenString)
-    if err != nil {
-        return false, "Token invalid"
-    }
+	token, err := authClient.VerifyIDToken(ctx, tokenString)
+	if err != nil {
+		return false, "Token invalid"
+	}
 
-    uid := token.UID
-    user, err := repo.FetchUserByUID(context.Background(), uid)
-    if err != nil {
-        return false, "User not found"
-    }
+	uid := token.UID
+	user, err := repo.FetchUserByUID(context.Background(), uid)
+	if err != nil {
+		return false, "User not found"
+	}
 
-    if user.Role != "TA" {
-        return false, "User is not a TA"
-    }
+	if user.Role != "TA" {
+		return false, "User is not a TA"
+	}
 
-    return true, "Success"
+	return true, "Success"
 }
 
+// Function to create a TA application
 func CreateTAApplication(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
-    ctx := context.Background()
-    
-    authHeader := c.Request().Header.Get("Authorization")
-    if authHeader == "" {
-        return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
-    }
-    tokenString := authHeader[len("Bearer "):]
-    isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
+	fmt.Println("Starting to create the TA application")
+	ctx := context.Background()
 
-    if !isAuth {
-        return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
-    }
+	// Retrieve the Authorization header
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
+	}
+	tokenString := authHeader[len("Bearer "):]
 
-    var application models.TAApplication
-    if err := c.Bind(&application); err != nil {
-        return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request data"})
-    }
+	// Verify and authenticate user
+	token, err := authClient.VerifyIDToken(ctx, tokenString)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid token"})
+	}
+	uid := token.UID
 
-    application.CreatedAt = time.Now().Unix()
-    application.Status = "Pending"
+	// Fetch user details from Firebase
+	user, err := repo.FetchUserByUID(ctx, uid)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to retrieve user details"})
+	}
 
-    if err := repo.CreateTAApplication(ctx, &application); err != nil {
-        return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to create application"})
-    }
+	// Validate user role
+	if user.Role != "TA" {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "User is not authorized to apply"})
+	}
 
-    return c.JSON(http.StatusCreated, application)
+	// Bind the request body to the application struct
+	var application models.Form
+	if err := c.Bind(&application); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request data"})
+	}
+	fmt.Println(application)
+
+	// Populate application details
+	application.ID = uuid.NewString()
+	fmt.Println("this yo uid n name:", uid, user.Name)
+	application.UploaderID = uid
+	application.UploaderName = user.Name
+	application.Status = "Pending"
+
+	// Save application to Firebase
+	if err := repo.CreateTAApplication(ctx, &application); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to save application"})
+	}
+
+	fmt.Println("Successfully created the TA application")
+	return c.JSON(http.StatusCreated, application)
 }

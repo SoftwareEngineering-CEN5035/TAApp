@@ -305,7 +305,7 @@ func (r *Repository) FetchCoursesByTaID(ctx context.Context, taID string) ([]mod
 
 	return courses, nil
 }
-func (r *Repository) CreateTAApplication(ctx context.Context, application *models.TAApplication) error {
+func (r *Repository) CreateTAApplication(ctx context.Context, application *models.Form) error {
 	_, _, err := r.client.Collection("ta_applications").Add(ctx, application)
 	if err != nil {
 		log.Printf("Failed to create TA application: %v", err)
@@ -314,8 +314,8 @@ func (r *Repository) CreateTAApplication(ctx context.Context, application *model
 	return nil
 }
 
-func (r *Repository) GetTAApplicationsByUserID(ctx context.Context, userID string) ([]models.TAApplication, error) {
-	var applications []models.TAApplication
+func (r *Repository) GetTAApplicationsByUserID(ctx context.Context, userID string) ([]models.Form, error) {
+	var applications []models.Form
 	iter := r.client.Collection("ta_applications").Where("userId", "==", userID).Documents(ctx)
 	defer iter.Stop()
 
@@ -328,7 +328,7 @@ func (r *Repository) GetTAApplicationsByUserID(ctx context.Context, userID strin
 			return nil, err
 		}
 
-		var app models.TAApplication
+		var app models.Form
 		if err := doc.DataTo(&app); err != nil {
 			return nil, err
 		}
