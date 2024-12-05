@@ -22,19 +22,20 @@ const Login = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-
+  
       const data = await response.json();
-
+  
       if (data.isAccountMade) {
+        // Store the role in localStorage
+        localStorage.setItem("role", data.role);
+        
         // Redirect based on user role
-        switch (
-          data.role // Using role from backend response
-        ) {
+        switch (data.role) {
           case "TA":
             router.push("/TADashboard");
             break;
           case "Instructor":
-            router.push("/InstructorDashboard");
+            router.push("/instructorDashboard");
             break;
           case "Committee":
             router.push("/committeeDashboard");
@@ -49,7 +50,9 @@ const Login = () => {
         router.push("/newuserwelcome");
       }
     } catch (error) {
-      toast.error("Failed to validate login. Please try again.");
+      toast.error("Login validation failed. Please try again.");
+    } finally {
+      setLoading(false); // Reset loading state after login attempt
     }
   };
 
