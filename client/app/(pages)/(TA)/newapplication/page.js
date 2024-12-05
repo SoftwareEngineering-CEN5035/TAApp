@@ -7,8 +7,8 @@ const TAApplicationPage = () => {
   const router = useRouter();
   const [formData, setFormData] = useState({
     hasPriorExperience: false,
-    preferredCourses: [],
-    fileURL: '',  // Changed from cvUrl to fileURL
+    preferredCourse: '', // Single string instead of an array
+    fileURL: '',  
   });
   const [availableCourses, setAvailableCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,6 +31,7 @@ const TAApplicationPage = () => {
         });
         if (!response.ok) throw new Error('Failed to fetch courses');
         const data = await response.json();
+        console.log(data)
         setAvailableCourses(data);
       } catch (err) {
         setError('Failed to load courses');
@@ -42,38 +43,39 @@ const TAApplicationPage = () => {
     fetchCourses();
   }, [router]);
 
-  const handlePreferredCoursesChange = (courseId) => {
-    setFormData((prev) => ({
-      ...prev,
-      preferredCourses: prev.preferredCourses.includes(courseId)
-        ? prev.preferredCourses.filter((id) => id !== courseId)
-        : [...prev.preferredCourses, courseId],
-    }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
+  
     try {
       const token = localStorage.getItem('Token');
+  
+      if (!formData.preferredCourse) {
+        setError('Please select a course to apply for.');
+        return;
+      }
+  
       const response = await fetch('http://localhost:9000/ta/application', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          hasPriorExperience: formData.hasPriorExperience,
+          CourseAppliedID: formData.preferredCourse, // Correct field name for backend
+          fileURL: formData.fileURL,
+        }),
       });
-
+  
       if (!response.ok) throw new Error('Failed to submit application');
-
+  
       router.push('/ta/dashboard');
     } catch (err) {
       setError(err.message);
     }
   };
-
+  
   if (loading) return <div className="p-4">Loading...</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
 
@@ -100,14 +102,20 @@ const TAApplicationPage = () => {
         </div>
 
         <div>
-          <h2 className="text-xl mb-4">Preferred Courses</h2>
+          <h2 className="text-xl mb-4">Preferred Course</h2>
           <div className="grid grid-cols-2 gap-4">
             {availableCourses.map((course) => (
               <label key={course.ID} className="flex items-center space-x-2">
                 <input
-                  type="checkbox"
-                  checked={formData.preferredCourses.includes(course.ID)}
-                  onChange={() => handlePreferredCoursesChange(course.ID)}
+                  type="radio"
+                  name="preferredCourse" // Ensures all options are part of the same group
+                  checked={formData.preferredCourse === course.ID}
+                  onChange={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      preferredCourse: course.ID, // Store as a string
+                    }))
+                  }
                 />
                 <span>{course.Name}</span>
               </label>
