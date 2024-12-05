@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getAuth, onAuthStateChanged } from "@firebase/auth";
 import DepartmentNavbar from "../../navbars/departmentNavbar";
 import Courses from "../pagesDirectory/courses";
 import Applications from "../pagesDirectory/applications";
@@ -11,16 +12,21 @@ const DashboardPage = ({ params }) => {
   const router = useRouter();
   const [selectedPage, setSelectedPage] = useState(item);
 
-  // useEffect(() => {
-  //   const authToken = localStorage.getItem('authToken');
-  //   if (!authToken) {
-  //     router.push('/');
-  //   }
+  useEffect(() => {
+    const auth = getAuth();
+    if (item) {
+      localStorage.setItem("previousDashboardItem", item);
+    }
+		const unsubscribe = onAuthStateChanged(auth, (user) => {
+			if (user) {
+				console.log("logged in");
+			} else {
+				router.push('/login')
+			}
+		});
 
-  //   if (item) {
-  //     localStorage.setItem("previousDashboardItem", item);
-  //   }
-  // }, [router, item]);
+		return () => unsubscribe();
+  }, [router, item]);
 
   const renderBodyContent = () => {
     switch (selectedPage) {

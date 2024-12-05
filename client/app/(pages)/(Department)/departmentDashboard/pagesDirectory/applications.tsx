@@ -62,10 +62,13 @@ export default function Applications(){
     const fetchTaList = async () => {
         try {
             const taResult = await fetchUsersByRole('TA');
-            setTAList(taResult.map(user => ({
-                value: user.ID, 
+            setTAList([
+            { value: "Clear", label: "Clear" }, 
+            ...taResult.map(user => ({
+                value: user.ID,
                 label: user.Name
-            })));
+            }))
+        ]);
         } catch (error) {
             console.error('Error fetching user roles:', error);
         }
@@ -74,14 +77,17 @@ export default function Applications(){
     useEffect(() => {
         fetchForms();
         fetchTaList();
-        }, [fetchForms, fetchTaList]);
+        }, []);
 
     const handleTAChange = async (selectedOptions: SelectOption) => {
+        if(selectedOptions.value === "Clear"){
+            fetchForms();
+        }
         setTAFilter(selectedOptions.value);
 
         try {
             setLoading(true)
-            await axios.get(`${baseUrl}/formsByTA/:${taFilter}`, {
+            await axios.get(`${baseUrl}/formsByTa/:${taFilter}`, {
                 headers: {
                   Authorization: `Bearer ${localStorage.getItem("Token")}`,
                 },
@@ -96,7 +102,7 @@ export default function Applications(){
     };
 
     const applicationRedirect = (formId: string) => {
-        router.push(`/FormView/:${formId}`);
+        router.push(`/formView/${formId}`);
     }
 
     return (
@@ -108,14 +114,14 @@ export default function Applications(){
 
                 <div className="absolute left-24 top-48 items-start align-baseline justify-start">
                     <h1 className="text-lg font-normal tracking-light leading-tight">Sort By</h1>
-                    <Select placeholder="Teacher's Assistant" className="w-[15vw] mt-2" onChange={() => handleTAChange}  closeMenuOnSelect={true} isClearable={true} options={taList}/>
+                    <Select placeholder="Teacher's Assistant" className="w-[15vw] mt-2" onChange={handleTAChange}  closeMenuOnSelect={true} isClearable={true} options={taList}/>
                 </div>
 
                 <h1 className="text-2xl tracking-light leading-tight font-bold absolute left-24 top-72 mt-[5vh]">New Applications to Review</h1>
                 
-                <div className="absolute w-[90%] pl-14 pt-4 max-h-[100%] grid grid-cols-4 min-h-[50vh] mt-[40vh] left-24">
-                {applications.map((form) => ( 
-                    <div className="h-[375px] w-[250px] hover:bg-slate-300 hover:cursor-pointer text-center rounded-lg" onClick={() => applicationRedirect}>
+                <div className="absolute w-[100%] bg-slate-50 pl-14 pt-4 h-[100%] grid grid-cols-4 max-[1000px]:grid-cols-3 max-[500px]:grid-cols-1 gap-y-5 min-h-[50vh] mt-[40vh]">
+                {applications?.map((form) => ( 
+                    <div className="h-[375px] w-[250px] hover:bg-slate-300 hover:cursor-pointer text-center rounded-lg" onClick={() => applicationRedirect(form.ID)}>
                         <iframe src={form.FileURL} className="rounded-xl hover:cursor-pointer w-[100%] h-[70%]"/>
                         <p className="text-xl text-[#1C160C] font-normal leading-normal">Application</p>
                         <p className="text-md text-base font-medium leading-normal">{form.UploaderName}</p>

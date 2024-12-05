@@ -219,7 +219,7 @@ func GetFormsByTA(c echo.Context, repo *repository.Repository, authClient *auth.
 	if !isAuth {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
 	}
-
+    
 	taID := c.Param("id")
 	if taID == "" {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "TA ID is required"})

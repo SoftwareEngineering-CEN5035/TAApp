@@ -280,7 +280,6 @@ func (r *Repository) GetNewForms(ctx context.Context) ([]models.Form, error) {
 			log.Printf("Error decoding form data: %v", err)
 			return nil, err
 		}
-		form.ID = doc.Ref.ID
 		forms = append(forms, form)
 	}
 	return forms, nil
