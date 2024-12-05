@@ -40,7 +40,7 @@ const Login = () => {
             router.push("/committeeDashboard");
             break;
           case "Department":
-            router.push("/staffDashboard");
+            router.push("/departmentDashboard/course");
             break;
           default:
             router.push("/dashboard"); // Fallback route

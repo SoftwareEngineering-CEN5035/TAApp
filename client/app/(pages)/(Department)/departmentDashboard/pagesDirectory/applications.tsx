@@ -31,7 +31,11 @@ export default function Applications(){
     const fetchForms = async () => {
         try {
             setLoading(true)
-            await axios.get(`${baseUrl}/newForms`).then((res: AxiosResponse) => {
+            await axios.get(`${baseUrl}/newForms`, {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("Token")}`,
+                },
+              }).then((res: AxiosResponse) => {
           setApplications(res.data);
           });
         } catch (error) {
@@ -43,7 +47,11 @@ export default function Applications(){
 
     const fetchUsersByRole = async (role: string) => {
         try {
-            const response = await axios.get(`${baseUrl}/users/${role}`);
+            const response = await axios.get(`${baseUrl}/users/${role}`, {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("Token")}`,
+                },
+              });
             return response.data;
         } catch (error) {
             console.error('Error fetching users by role:', error);
@@ -73,7 +81,11 @@ export default function Applications(){
 
         try {
             setLoading(true)
-            await axios.get(`${baseUrl}/formsByTA/:${taFilter}`).then((res: AxiosResponse) => {
+            await axios.get(`${baseUrl}/formsByTA/:${taFilter}`, {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("Token")}`,
+                },
+              }).then((res: AxiosResponse) => {
             setApplications(res.data);
           });
         } catch (error) {

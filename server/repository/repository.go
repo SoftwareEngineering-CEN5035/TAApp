@@ -105,7 +105,6 @@ func (r *Repository) CreateForm(ctx context.Context, form *models.Form) error {
 func (r *Repository) FetchUserByUID(ctx context.Context, uid string) (*models.User, error) {
 	println("this is uid")
 	println(uid)
-	println("this is uid")
 
 	iter := r.client.Collection("users").Where("id", "==", uid).Limit(1).Documents(ctx)
 	doc, err := iter.Next()
@@ -166,6 +165,7 @@ func (r *Repository) UpdateCourse(ctx context.Context, course *models.Course) er
 		"instructorName": course.InstructorName,
 		"instructorID":   course.InstructorID,
 		"taList":         course.TaList,
+		"taIDList": 	  course.TaIDList,
 	}, firestore.MergeAll)
 	if err != nil {
 		log.Printf("Failed to update course: %v", err)
@@ -206,10 +206,10 @@ func (r *Repository) UpdateFormDepartment(ctx context.Context, form *models.Form
 func (r *Repository) DeleteCourseByID(ctx context.Context, courseID string) error {
 	query := r.client.Collection("courses").Where("id", "==", courseID).Limit(1).Documents(ctx)
 	defer query.Stop() 
-
 	doc, err := query.Next()
 	if err != nil {
 		if err == iterator.Done {
+			println("no course found with ID: %s", courseID)
 			return fmt.Errorf("no course found with ID: %s", courseID)
 		}
 		return fmt.Errorf("error fetching course: %w", err)
@@ -304,7 +304,6 @@ func (r *Repository) GetAllCourses(ctx context.Context) ([]models.Course, error)
 			log.Printf("Error decoding course data: %v", err)
 			return nil, err
 		}
-		course.ID = doc.Ref.ID
 		courses = append(courses, course)
 	}
 	return courses, nil

@@ -9,12 +9,13 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 
 type Course = {
-  ID: String,
-  Name: String,
-  Type: String,
-  InstructorName: String,
-  InstructorID: String, 
+  ID: string,
+  Name: string,
+  Type: string,
+  InstructorName: string,
+  InstructorID: string, 
   TaList: Array<string>,
+  TaIDList: Array<string>,
 }
 
 type CourseViewProps = {
@@ -54,41 +55,18 @@ export default function Courses(){
     let [taList, setTaList] = useState<SelectOption[]>([]);
     let [taFilter, setTaFilter] = useState('');
     const router = useRouter();
-    let [courses, setCourses] = useState(
-        [
-            {
-                ID: "C001",
-                Name: "Introduction to Programming",
-                Type: "Core",
-                InstructorName: "Dr. John Doe",
-                InstructorID: "I001",
-                TaList: ["Alice Johnson", "Bob Smith"],
-              },
-              {
-                ID: "C002",
-                Name: "Data Structures and Algorithms",
-                Type: "Core",
-                InstructorName: "Dr. Jane Doe",
-                InstructorID: "I002",
-                TaList: ["Charlie Brown", "Dana White"],
-              },
-              {
-                ID: "C005",
-                Name: "Software Engineering",
-                Type: "Core",
-                InstructorName: "Dr. Peter Parker",
-                InstructorID: "I005",
-                TaList: ["Ivy Adams", "Jack Wilson"],
-              },
-        ]
-    )
+    let [courses, setCourses] = useState<Course[]>([]);
 
     const baseUrl = 'http://localhost:9000'
 
     const fetchCourses = async () => {
         try {
             setLoading(true)
-          const response = await axios.get(`${baseUrl}/courses`);
+          const response = await axios.get(`${baseUrl}/courses`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          });
           setCourses(response.data);
         } catch (error) {
           console.error("Error fetching courses:", error);
@@ -99,7 +77,11 @@ export default function Courses(){
 
     const fetchUsersByRole = async (role: string) => {
         try {
-            const response = await axios.get(`${baseUrl}/users/${role}`);
+            const response = await axios.get(`${baseUrl}/users/${role}`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("Token")}`,
+              },
+            });
             return response.data;
         } catch (error) {
             console.error('Error fetching users by role:', error);
@@ -110,10 +92,13 @@ export default function Courses(){
     const fetchTAListData = async () => {
       try {
           const taResult = await fetchUsersByRole('TA');
-          setTaList(taResult.map(user => ({
-              value: user.ID, 
-              label: user.Name
-          })));
+          setTaList([
+            { value: "Clear", label: "Clear" }, 
+            ...taResult.map(user => ({
+                value: user.ID,
+                label: user.Name
+            }))
+        ]);
       } catch (error) {
           console.error('Error fetching user roles:', error);
       }
@@ -124,7 +109,7 @@ export default function Courses(){
     fetchTAListData();
     fetchCourses();
     
-    }, [fetchCourses, fetchTAListData]);
+    }, []);
 
     const handleView = (course: Course) => {
         setToggledView(true);
@@ -136,8 +121,13 @@ export default function Courses(){
     };
 
     const handleDelete = async (courseID: string) => {
+      console.log(courseID);
         try {
-            await axios.delete(`${baseUrl}/courses/${courseID}`);
+            await axios.delete(`${baseUrl}/courses/${courseID}`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("Token")}`,
+              },
+            });
             
             const updatedCourses = courses.filter((course) => course.ID !== courseID);
             setCourses(updatedCourses);
@@ -159,11 +149,20 @@ export default function Courses(){
     }
     
     const handleTAChange = async (selectedOptions: SelectOption) => {
+      if (!selectedOptions || selectedOptions.value === "Clear") {
+        setTaFilter('');
+        fetchCourses(); 
+        return;
+    }
         setTaFilter(selectedOptions.value);
+        setLoading(true);
 
         try {
-            setLoading(true)
-          const response = await axios.get(`${baseUrl}/coursesByTA/:${taFilter}`);
+          const response = await axios.get(`${baseUrl}/coursesByTA/:${taFilter}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          });
           setCourses(response.data);
         } catch (error) {
           console.error("Error fetching courses:", error);
@@ -196,7 +195,7 @@ export default function Courses(){
                 </tr>
                 </thead>
                 <tbody>
-                {courses.map((course) => (
+                {courses?.map((course) => (
                     <tr key={course.ID} className="hover:bg-gray-100">
                         <td className="border border-gray-400 px-4 py-2 max-[500px]:px-1">{course.ID}</td>
                         <td className="border border-gray-400 px-4 py-2 max-[500px]:px-1">{course.Type}</td>
@@ -226,7 +225,7 @@ export default function Courses(){
                 ))}
                 </tbody>
             </table>
-            <p className="text-black text-sm font-light ml-[75vw] mt-3">Displaying {courses.length} entries</p>
+            <p className="text-black text-sm font-light ml-[75vw] mt-3">Displaying {courses?.length} entries</p>
             {toggleView && <CourseView course={course} onClose={handleCloseView}/>}
             </>}
         </div>

@@ -7,4 +7,5 @@ type Course struct {
 	InstructorName string   `firestore:"instructorName" json:"InstructorName"`
 	InstructorID   string   `firestore:"instructorId" json:"InstructorID"`
 	TaList         []string `firestore:"taList" json:"TaList"`
+	TaIDList       []string `firestore:"taIDList" json:"TaIDList"`
 }

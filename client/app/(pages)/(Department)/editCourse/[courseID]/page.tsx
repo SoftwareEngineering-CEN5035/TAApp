@@ -7,13 +7,19 @@ import { useRouter } from "next/navigation";
 import { IoMdArrowBack } from "react-icons/io";
 
 type Course = {
-        ID: String,
-        Name: String,
-        Type: String,
-        InstructorName: String,
-        InstructorID: String, 
+        ID: string,
+        Name: string,
+        Type: string,
+        InstructorName: string,
+        InstructorID: string, 
         TaList: Array<string>,
+        TaIDList: Array<string>,
 }
+
+type SelectOption = {
+    value: string; 
+    label: string;
+};
 
 // Create base form, figure out how to get list of Ta Names - probably create new endpoint
 export default function EditCourse({ params }){
@@ -24,31 +30,28 @@ export default function EditCourse({ params }){
     let [instructorName, setInstructorName] = useState('');
     let [instructorId, setInstructorId] = useState('');
     let [selectedTAs, setSelectedTAs] = useState([]);
+    let [selectedTAIDs, setSelectedIDs] = useState([]);
     let [loading, setLoading] = useState(false);
 
     let [course, setCourse] = useState<Course>();
     const baseUrl = "http://localhost:9000";
 
-    let [taList, setTaList] = useState([
-        { value: 'chocolate', label: 'Chocolate' },
-        { value: 'strawberry', label: 'Strawberry' },
-        { value: 'vanilla', label: 'Vanilla' }
-    ]);   
+    let [taList, setTaList] = useState<SelectOption[]>([])   
 
-    let [professorList, setProfessorList] = useState([
-        { value: 'chocolate', label: 'Chocolate' },
-        { value: 'strawberry', label: 'Strawberry' },
-        { value: 'vanilla', label: 'Vanilla' }
-    ]);   
+    let [professorList, setProfessorList] = useState<SelectOption[]>([]);   
 
     const typeList = [
         { value: 'core', label: 'Core' },
         { value: 'elective', label: 'Elective' }
     ]
 
-    const fetchUsersByRole = async (role) => {
+    const fetchUsersByRole = async (role: string) => {
         try {
-            const response = await axios.get(`${baseUrl}/users/${role}`);
+            const response = await axios.get(`${baseUrl}/users/${role}`, {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("Token")}`,
+                },
+              });
             return response.data;
         } catch (error) {
             console.error('Error fetching users by role:', error);
@@ -58,13 +61,17 @@ export default function EditCourse({ params }){
 
     const fetchCourse = async (courseId: string) => {
         try {
-            await axios.get(`${baseUrl}/courses/${courseId}`).then((res: AxiosResponse) => {
-                const courseData = res.data; 
+            await axios.get(`${baseUrl}/courses/${courseId}`, {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("Token")}`,
+                },
+              }).then((res: AxiosResponse) => {
+                const courseData: Course = res.data; 
                 setCourse(courseData); 
                 setName(courseData?.Name || ""); 
                 setType(courseData?.Type || "");
                 setInstructorName(courseData?.InstructorName || "");
-                setInstructorId(courseData?.InstructorId || "");
+                setInstructorId(courseData?.InstructorID || "");
                 setSelectedTAs(courseData?.TaList || []);
             });
         } catch (error) {
@@ -80,15 +87,20 @@ export default function EditCourse({ params }){
                 const taResult = await fetchUsersByRole('TA');
                 const professorResult = await fetchUsersByRole('Professor');
 
-                setTaList(taResult.map(user => ({
-                    value: user.ID, 
-                    label: user.Name
-                })));
-
-                setProfessorList(professorResult.map(user => ({
-                    value: user.ID, 
-                    label: user.Name
-                })));
+                setTaList([
+                    ...Array.isArray(taResult) ? taResult.map(user => ({
+                        value: user.ID,
+                        label: user.Name
+                    })) : [{ value: "Empty", label: "Empty" }]
+                ]);
+        
+                // Ensure professorResult is an array
+                setProfessorList([
+                    ...Array.isArray(professorResult) ? professorResult.map(user => ({
+                        value: user.ID,
+                        label: user.Name
+                    })) : [{ value: "Empty", label: "Empty" }]
+                ]);
             } catch (error) {
                 console.error('Error fetching user roles:', error);
             }
@@ -97,21 +109,26 @@ export default function EditCourse({ params }){
         fetchOptionsData();
 
         fetchCourse(courseId);
-        setLoading(true);
     }, []);
 
 
     const handleSubmit = async () => {   
-        const editedData = {
+        const editedData: Course = {
+            ID: courseId,
             Name: name,
             Type: type,
             InstructorName: instructorName,
             TaList: selectedTAs,
-            InstructorID: instructorId
-        }
+            InstructorID: instructorId,
+            TaIDList: selectedTAIDs
+        };
 
         try {
-            await axios.patch(`${baseUrl}/courses`, editedData).then((res : AxiosResponse) => {
+            await axios.patch(`${baseUrl}/courses`, editedData, {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("Token")}`,
+                },
+              }).then((res : AxiosResponse) => {
                 console.log('Course created successfully:', res.data);
                 router.push(`/departmentDashboard/course`);
             });
@@ -121,19 +138,29 @@ export default function EditCourse({ params }){
         }
     }
 
-    const handleTAChange = (selectedOptions) => {
-        setSelectedTAs(selectedOptions || []);
-        console.log("Selected TAs: ", selectedOptions);
+    const handleTAChange = (selectedOptions: SelectOption[]) => {
+        if (!selectedOptions || selectedOptions.some(option => option.value === "Empty")) {
+            return;
+        }
+    
+        const selectedValues = selectedOptions.map(option => option.value);
+        const selectedLabel = selectedOptions.map(option => option.label);
+    
+        setSelectedIDs(selectedValues);
+        setSelectedTAs(selectedLabel);
       };
 
     const handleProfessorChange = (selectedOption) => {
+        if(selectedOption.value === "Empty"){
+            return;
+        }
         const { value, label } = selectedOption;
         setInstructorName(label);
         setInstructorId(value);
     };
 
     const handleTypeChange = (selectedOption) => {
-        setType(selectedOption);
+        setType(selectedOption.value);
     }
 
     const handleBackButton = () => {
@@ -142,11 +169,11 @@ export default function EditCourse({ params }){
 
     const isFormChanged = () => {
         return (
-            name !== course.Name &&
-            type !== course.Type &&
-            instructorName !== course.InstructorName &&
-            instructorId !== course.InstructorID &&
-            JSON.stringify(selectedTAs) !== JSON.stringify(course.TaList)
+            name !== course?.Name &&
+            type !== course?.Type &&
+            instructorName !== course?.InstructorName &&
+            instructorId !== course?.InstructorID &&
+            JSON.stringify(selectedTAs) !== JSON.stringify(course?.TaList)
         );
     };
 
@@ -160,7 +187,7 @@ export default function EditCourse({ params }){
     return (
         <div className='w-[100%] h-[100%] flex bg-gray-400 justify-center items-center'>
             <IoMdArrowBack className="absolute text-black text-3xl left-10 top-10 hover:cursor-pointer hover: hover:text-gray-700" onClick={handleBackButton}/>
-            <form onSubmit={handleSubmit} className="bg-slate-100 max-[500px]:w-[90vw] border-black border-4 rounded-md items-center shadow-md h-[70vh] w-[30vw] flex flex-col">
+            <form onSubmit={(e) => {e.preventDefault(); handleSubmit();}} className="bg-slate-100 max-[500px]:w-[90vw] border-black border-4 rounded-md items-center shadow-md h-[70vh] w-[30vw] flex flex-col">
                 {loading && <p className="text-2xl text-center mt-10">Loading...</p>}
                 {!loading && course !== undefined && 
                 <>
@@ -172,7 +199,7 @@ export default function EditCourse({ params }){
                     <Select
                         closeMenuOnSelect={true}
                         options={professorList}
-                        defaultValue={ {value: course.InstructorID, label: course.InstructorName}}
+                        defaultValue={ {value: course?.InstructorID, label: course?.InstructorName}}
                         onChange={handleProfessorChange}
                         className="mt-1 w-[20vw] max-[500px]:w-[55vw]"
                         required
@@ -185,7 +212,7 @@ export default function EditCourse({ params }){
                         options={typeList}
                         onChange={handleTypeChange}
                         className="mt-1 w-[20vw] max-[500px]:w-[55vw]"
-                        defaultValue={ {value: course.Type, label: course.Type} }
+                        defaultValue={ {value: course?.Type, label: course?.Type} }
                         required
                         placeholder="Please select a class type"
                     />
@@ -194,14 +221,14 @@ export default function EditCourse({ params }){
                     <Select
                         closeMenuOnSelect={false}
                         isMulti
-                        options={typeList}
-                        defaultValue={mapTaList(course.TaList)}
+                        options={taList}
+                        defaultValue={mapTaList(course?.TaList)}
                         onChange={handleTAChange}
                         className="mt-1 w-[20vw] max-[500px]:w-[55vw]"
                         required
                         placeholder="Please select TAs"
                     />
-                    <button type="submit" disabled={!isFormChanged()} className="bg-blue-500 max-[500px]:mt-10 max-[500px]:w-[20vw] hover:bg-blue-600 text-white text-2xl flex justify-center mt-7 items-center w-[5vw] h-[35px] rounded-lg pointer"> <IoSaveOutline/></button>
+                    <button type="submit"  className="bg-blue-500 hover:cursor-pointer max-[500px]:mt-10 max-[500px]:w-[20vw] hover:bg-blue-600 text-white text-2xl flex justify-center mt-7 items-center w-[15vw] h-[35px] rounded-lg pointer"> <IoSaveOutline/></button>
                 </>
                 }
             </form>

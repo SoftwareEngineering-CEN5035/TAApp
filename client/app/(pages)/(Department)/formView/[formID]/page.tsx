@@ -48,7 +48,11 @@ export default function FormView({ params }) {
     const fetchFormById = async () => {
         try {
             setLoading(true)
-          const response = await axios.get(`${baseUrl}/forms/${formId}`);
+          const response = await axios.get(`${baseUrl}/forms/${formId}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          });
           setForm(response.data);
         } catch (error) {
           console.error("Error fetching courses:", error);
@@ -76,7 +80,11 @@ export default function FormView({ params }) {
                 FileURL: form.FileURL,
                 Status: update
             }
-            await axios.patch(`${baseUrl}/forms`, data).then(() => {
+            await axios.patch(`${baseUrl}/forms`, data, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          }).then(() => {
                 router.push(`/departmentDashboard`);
             });
         }catch(error) {
