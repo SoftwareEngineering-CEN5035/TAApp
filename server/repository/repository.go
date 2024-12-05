@@ -19,44 +19,57 @@ func NewRepository(client *firestore.Client) *Repository {
 }
 
 func (r *Repository) FetchCourseByID(ctx context.Context, ID string) (*models.Course, error) {
-    iter := r.client.Collection("courses").Where("id", "==", ID).Limit(1).Documents(ctx)
-    doc, err := iter.Next()
-    if err != nil {
-        return nil, err
-    }
-    var course models.Course
-    if err := doc.DataTo(&course); err != nil {
-        return nil, err
-    }
+	iter := r.client.Collection("courses").Where("id", "==", ID).Limit(1).Documents(ctx)
+	doc, err := iter.Next()
+	if err != nil {
+		return nil, err
+	}
+	var course models.Course
+	if err := doc.DataTo(&course); err != nil {
+		return nil, err
+	}
 
-    return &course, nil
+	return &course, nil
 }
 
 func (r *Repository) FetchUsersByRole(ctx context.Context, role string) ([]models.User, error) {
-    iter := r.client.Collection("users").Where("role", "==", role).Documents(ctx)
-    
-    var users []models.User
-    for {
-        doc, err := iter.Next()
-        if err != nil {
-            if err == iterator.Done {
-                break
-            }
-            return nil, err
-        }
-        
-        var user models.User
-        if err := doc.DataTo(&user); err != nil {
-            return nil, err
-        }
-        
-        users = append(users, user)
-    }
-    
-    return users, nil
-}
+	iter := r.client.Collection("users").Where("role", "==", role).Documents(ctx)
 
+	var users []models.User
+	for {
+		doc, err := iter.Next()
+		if err != nil {
+			if err == iterator.Done {
+				break
+			}
+			return nil, err
+		}
+
+		var user models.User
+		if err := doc.DataTo(&user); err != nil {
+			return nil, err
+		}
+
+		users = append(users, user)
+	}
+
+	return users, nil
+}
 func (r *Repository) CreateUser(ctx context.Context, user *models.User) error {
+	// Check if a user with the same UID already exists
+	iter := r.client.Collection("users").Where("id", "==", user.ID).Documents(ctx)
+	defer iter.Stop()
+
+	if snapshot, err := iter.Next(); err == nil && snapshot.Exists() {
+		// User with the same UID already exists
+		return fmt.Errorf("user with ID %s already exists", user.ID)
+	} else if err != nil && err != iterator.Done {
+		// Some error occurred during query
+		log.Printf("Failed to query users: %v", err)
+		return err
+	}
+
+	// Add new user since no duplicates were found
 	_, _, err := r.client.Collection("users").Add(ctx, map[string]interface{}{
 		"id":    user.ID,
 		"name":  user.Name,
@@ -64,11 +77,10 @@ func (r *Repository) CreateUser(ctx context.Context, user *models.User) error {
 		"role":  user.Role,
 	})
 	if err != nil {
-		fmt.Println("this shit was broken")
 		log.Printf("Failed to create user: %v", err)
 		return err
 	}
-	fmt.Println("this shit was added")
+
 	return nil
 }
 
@@ -275,27 +287,27 @@ func (r *Repository) GetNewForms(ctx context.Context) ([]models.Form, error) {
 }
 
 func (r *Repository) GetAllCourses(ctx context.Context) ([]models.Course, error) {
-    var courses []models.Course
-    iter := r.client.Collection("courses").Documents(ctx)
-    defer iter.Stop() 
-    for {
-        doc, err := iter.Next()
-        if err == iterator.Done {
-            break
-        }
-        if err != nil {
-            log.Printf("Error retrieving courses: %v", err)
-            return nil, err
-        }
-        var course models.Course
-        if err := doc.DataTo(&course); err != nil {
-            log.Printf("Error decoding course data: %v", err)
-            return nil, err
-        }
-        course.ID = doc.Ref.ID
-        courses = append(courses, course)
-    }
-    return courses, nil
+	var courses []models.Course
+	iter := r.client.Collection("courses").Documents(ctx)
+	defer iter.Stop()
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			log.Printf("Error retrieving courses: %v", err)
+			return nil, err
+		}
+		var course models.Course
+		if err := doc.DataTo(&course); err != nil {
+			log.Printf("Error decoding course data: %v", err)
+			return nil, err
+		}
+		course.ID = doc.Ref.ID
+		courses = append(courses, course)
+	}
+	return courses, nil
 }
 
 func (r *Repository) FetchFormById(ctx context.Context, formID string) (*models.Form, error) {

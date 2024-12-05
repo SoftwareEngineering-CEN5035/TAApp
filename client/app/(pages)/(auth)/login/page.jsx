@@ -13,7 +13,6 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [userType, setUserType] = useState("TA");
   const router = useRouter();
-
   const loginUser = async (token) => {
     try {
       const response = await fetch("http://localhost:9000/login", {
@@ -22,12 +21,30 @@ const Login = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ usertype: userType }),
       });
 
       const data = await response.json();
+
       if (data.isAccountMade) {
-        router.push("/dashboard");
+        // Redirect based on user role
+        switch (
+          data.role // Using role from backend response
+        ) {
+          case "TA":
+            router.push("/TADashboard");
+            break;
+          case "Instructor":
+            router.push("/InstructorDashboard");
+            break;
+          case "Committee":
+            router.push("/committeeDashboard");
+            break;
+          case "Department":
+            router.push("/staffDashboard");
+            break;
+          default:
+            router.push("/dashboard"); // Fallback route
+        }
       } else {
         router.push("/newuserwelcome");
       }
@@ -116,31 +133,7 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <div>
-            <label
-              htmlFor="usertype"
-              className="block mb-2 text-sm font-semibold text-gray-700"
-            >
-              <User className="inline-block w-5 h-5 mr-2 text-gray-500" />
-              User Type
-            </label>
-            <div className="relative">
-              <select
-                id="usertype"
-                className="w-full p-4 border border-gray-300 rounded-lg text-gray-700 focus:ring-blue-500 focus:border-blue-500 transition ease-in-out duration-150 bg-white appearance-none pr-10"
-                value={userType}
-                onChange={(e) => setUserType(e.target.value)}
-              >
-                <option value="TA">TA</option>
-                <option value="Teacher">Teacher</option>
-                <option value="TA Committee Member">TA Committee Member</option>
-                <option value="Department Staff">Department Staff</option>
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                <ChevronDown className="w-5 h-5 text-gray-400" />
-              </div>
-            </div>
-          </div>
+
           <button
             type="submit"
             className="w-full flex items-center justify-center bg-blue-600 text-white px-6 py-3 rounded-lg text-lg font-medium hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-all duration-200 shadow-md"
@@ -158,7 +151,10 @@ const Login = () => {
           </button>
           <p className="text-sm text-gray-600 mt-4">
             Don't have an account?{" "}
-            <Link href="/signup" className="text-blue-600 hover:underline font-semibold">
+            <Link
+              href="/signup"
+              className="text-blue-600 hover:underline font-semibold"
+            >
               Sign up here
             </Link>
           </p>

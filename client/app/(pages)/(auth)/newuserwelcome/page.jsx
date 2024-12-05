@@ -22,9 +22,50 @@ const NewUserWelcome = () => {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         setIsLoading(false);
+
+        // Check if user document exists
+        try {
+          const response = await fetch(
+            "http://localhost:9000/checkUserDocument",
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("Token")}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (response.ok) {
+            const { exists, role } = await response.json();
+            if (exists) {
+              console.log(`User role: ${role}`);
+
+              // Implement switch-case routing based on role
+              switch (role) {
+                case "TA":
+                  router.push("/TADashboard");
+                  break;
+                case "Instructor":
+                  router.push("/InstructorDashboard");
+                  break;
+                case "Committee":
+                  router.push("/committeeDashboard");
+                  break;
+                case "Department":
+                  router.push("/departmentDashboard");
+                  break;
+                default:
+                  router.push("/dispo"); // Fallback route
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error checking user document:", error);
+        }
       } else {
         router.push("/login");
       }
@@ -61,7 +102,25 @@ const NewUserWelcome = () => {
       }
 
       toast.success("Signup successful!");
-      router.push("/dashboard");
+      console.log(role);
+      switch (role) {
+        case "Department":
+          router.push("/departmentdashboard");
+          break;
+        case "TA":
+          router.push("/tadashboard");
+          break;
+        case "Instructor":
+          router.push("/Instructordashboard");
+          break;
+        case "Committee":
+          router.push("/committeedashboard");
+          break;
+        // Add more roles here as needed
+        default:
+          router.push("/dispo"); // Default route if role is not recognized
+          break;
+      }
     } catch (error) {
       console.error(error);
       toast.error(error.message || "An error occurred");
@@ -70,9 +129,9 @@ const NewUserWelcome = () => {
 
   const roleOptions = [
     { value: "TA", label: "TA" },
-    { value: "TA Committee Member", label: "TA Committee Member" },
-    { value: "Teacher", label: "Teacher" },
-    { value: "Department Staff", label: "Department Staff" },
+    { value: "Committee", label: "Committee" },
+    { value: "Instructor", label: "Instructor" },
+    { value: "Department", label: "Department" },
   ];
 
   return (
