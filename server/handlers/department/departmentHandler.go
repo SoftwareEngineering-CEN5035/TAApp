@@ -140,6 +140,29 @@ func GetNewForms(c echo.Context, repo *repository.Repository, authClient *auth.C
 	return c.JSON(http.StatusOK, formsList)
 }
 
+// Returns all forms
+func GetFormsPending(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
+	ctx := context.Background()
+
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
+	}
+	tokenString := authHeader[len("Bearer "):]
+	isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
+
+	if !isAuth {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
+	}
+
+	formsList, err := repo.GetFormsPending(ctx)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to retrieve forms"})
+	}
+
+	return c.JSON(http.StatusOK, formsList)
+}
+
 // Gets specifc form by Id
 func GetFormById(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
 	ctx := context.Background()
@@ -261,7 +284,7 @@ func UpdateDepartmentForm(c echo.Context, repo *repository.Repository, authClien
 	return c.JSON(http.StatusCreated, form)
 }
 
-func GetDepartmentFormsByA(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
+func GetDepartmentFormsByTA(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
 	ctx := context.Background()
 
 	authHeader := c.Request().Header.Get("Authorization")

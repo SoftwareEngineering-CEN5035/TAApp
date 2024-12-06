@@ -37,7 +37,6 @@ func RegisterRoutes(e *echo.Echo, repo *repository.Repository, authClient *auth.
 	e.GET("/checkUserDocument", func(c echo.Context) error {
 		return login.CheckUserDocument(c, repo, authClient)
 	})
-
 	e.DELETE("/courses/:id", func(c echo.Context) error {
 		return department.DeleteCourse(c, repo, authClient)
 	})
@@ -57,7 +56,10 @@ func RegisterRoutes(e *echo.Echo, repo *repository.Repository, authClient *auth.
 		return course.GetCoursesById(c, repo, authClient)
 	})
 	e.GET("/departmentForms/:taId", func(c echo.Context) error {
-		return department.GetDepartmentFormsByA(c, repo, authClient)
+		return department.GetDepartmentFormsByTA(c, repo, authClient)
+	})
+	e.GET("/departmentPendingForms", func(c echo.Context) error {
+		return department.GetFormsPending(c, repo, authClient)
 	})
 	e.PATCH("/courses", func(c echo.Context) error {
 		return course.UpdateCourse(c, repo, authClient)
