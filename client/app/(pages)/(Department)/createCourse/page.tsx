@@ -96,7 +96,8 @@ export default function CreateCourse() {
         fetchData();
     }, []); // Empty dependency array means this runs once on mount
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (event: React.FormEvent) => {
+        event.preventDefault(); 
         if (name.trim().length === 0 || type.trim().length === 0 || instructorName.trim().length === 0 || selectedTAs.length === 0) {
             return alert('Please Fill Inputs');
         }
@@ -112,14 +113,14 @@ export default function CreateCourse() {
         };
 
         try {
-            const response = await axios.post(`${baseUrl}/courses`, data, {
+           await axios.post(`${baseUrl}/courses`, data, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("Token")}`,
                 },
+            }).then(() => {
+            router.push(`/departmentDashboard/course`);
             });
 
-            console.log('Course created successfully:', response.data);
-            router.push(`/departmentDashboard/course`);
         } catch (error) {
             console.error('Error creating course:', error);
             alert('Failed to create course. Please try again.');
@@ -162,7 +163,7 @@ export default function CreateCourse() {
 
                 <label className="mt-5 text-lg font-extralight max-[500px]:mt-7">Professor</label>
                 <Select
-                    closeMenuOnSelect={false}
+                    closeMenuOnSelect={true}
                     options={professorList}
                     onChange={handleProfessorChange}
                     className="mt-1 w-[20vw] max-[500px]:w-[55vw]"
@@ -172,7 +173,7 @@ export default function CreateCourse() {
 
                 <label className="mt-5 text-lg font-extralight max-[500px]:mt-7">Class Type</label>
                 <Select
-                    closeMenuOnSelect={false}
+                    closeMenuOnSelect={true}
                     options={typeList}
                     onChange={handleTypeChange}
                     className="mt-1 w-[20vw] max-[500px]:w-[55vw]"
