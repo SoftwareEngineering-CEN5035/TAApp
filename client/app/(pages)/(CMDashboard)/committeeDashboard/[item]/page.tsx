@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import PendingApplications from "../pagesDirectory/pendingApplications";
 
 const DashboardPage = ({ params }) => {
-  const item = params.item || "course";
+  const item = params.item || "courses";
   const router = useRouter();
   const [selectedPage, setSelectedPage] = useState(item);
 
@@ -31,9 +31,9 @@ const DashboardPage = ({ params }) => {
 
   const renderBodyContent = () => {
     switch (selectedPage) {
-      case "course":
+      case "courses":
         return <Courses />;
-      case "application":
+      case "applications":
         return <Applications />;
       case "pendingApplications":
         return <PendingApplications />;

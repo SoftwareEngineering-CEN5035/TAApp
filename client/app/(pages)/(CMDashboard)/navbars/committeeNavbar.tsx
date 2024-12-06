@@ -1,200 +1,184 @@
+"use client";
+
 import { FaBars, FaTimes } from "react-icons/fa";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { auth } from "../../../_lib/firebase";
 import { signOut } from "firebase/auth";
-import { useRouter } from "next/navigation";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { LogOut } from "lucide-react";
 
 const CommitteeNavbar = ({ setSelectedPage, selectedPage }) => {
+  const [navbarHeight, setNavbarHeight] = useState("h-20");
+  const [loading, setLoading] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [navbarHeight, setNavbarHeight] = useState("h-24");
-  const [loading, setLoading] = useState(false); // Loading state for sign-out
+
   const router = useRouter();
+  const pathname = usePathname();
 
-  const user = auth.currentUser;
-
+  // Adjust navbar height on scroll
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 1025);
-    };
-
     const handleScroll = () => {
       if (isMobile) {
         setNavbarHeight("h-16");
       } else {
         const scrollThreshold = 440;
-        if (window.scrollY > scrollThreshold) {
-          setNavbarHeight("h-16");
-        } else {
-          setNavbarHeight("h-24");
-        }
+        setNavbarHeight(window.scrollY > scrollThreshold ? "h-16" : "h-20");
       }
     };
 
-    handleResize();
-    window.addEventListener("resize", handleResize);
     window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isMobile]);
 
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("scroll", handleScroll);
+  // Handle resize for mobile view
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
+      if (window.innerWidth >= 1024) {
+        setIsOpen(false);
+      }
     };
+
+    handleResize(); // Initialize
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Handle sign out
+  const handleSignOut = async () => {
+    setLoading(true);
+    try {
+      await signOut(auth);
+      router.push("/login");
+    } catch (error) {
+      console.error("Sign out error: ", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update page on navigation
+  const handleNavigation = (page) => {
+    setSelectedPage(page);
+    router.push(`/committeeDashboard/${page}`);
+    localStorage.setItem("previousDashboardItem", page);
+    setIsOpen(false);
+  };
+
+  // Toggle mobile menu
   const toggleMenu = () => {
     setIsOpen((prev) => !prev);
   };
 
-  const closeMenu = () => {
-    setIsOpen(false);
-  };
-
-  const handleSignOut = async () => {
-    setLoading(true); // Set loading to true when starting sign out
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error("Sign out error: ", error);
-    } finally {
-      setLoading(false); // Reset loading state
-    }
-  };
-
-  const handleNavbarClick = (page: string) => {
-    router.push(`/committeeDashboard/${page}`)
-    localStorage.setItem("previousDashboardItem", page);
-  };
-
   return (
     <nav
-      className={`sticky top-0 w-full overflow-hidden h-[10vh] ${navbarHeight} bg-blue-300 border-b-[1px] border-black z-50 transition-all duration-300`}
+      className={`sticky top-0 w-full bg-gradient-to-r from-blue-200 via-blue-100 to-blue-200 shadow-md z-50 ${navbarHeight} transition-all duration-300`}
     >
-      <div className="w-full h-full flex justify-between items-center px-4 sm:px-6 md:px-6">
-        <div className="justify-between flex space-x-8 items-center">
-          {!isMobile && (
-            <>
-              <div className={`font-bold text-2xl text-black`}>
-                TA Application
-              </div>
-              <div
-                className={`font-bold text-lg text-black ${
-                  selectedPage === "application"
-                    ? "underline decoration-white"
-                    : ""
-                }`}
-                onClick={() => handleNavbarClick("applications")}
-              >
-                Applications
-              </div>
-              <div
-                className={`font-bold text-lg text-black ${
-                  selectedPage === "pendingApplications"
-                    ? "underline decoration-white"
-                    : ""
-                }`}
-                onClick={() => handleNavbarClick("pendingApplications")}
-              >
-                Pending Applications
-              </div>
-              <div
-                className={`font-bold text-lg text-black ${
-                  selectedPage === "course" ? "underline decoration-white" : ""
-                }`}
-                onClick={() => handleNavbarClick("courses")}
-              >
-                Courses
-              </div>
-              <button
-                onClick={handleSignOut}
-                className={`font-bold text-lg text-black cursor-pointer absolute right-2 bg-red-300 hover:bg-red-200 h-[45px] rounded-lg w-[80px]${
-                  loading ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-                disabled={loading} // Disable button when loading
-              >
-                {loading ? "Signing Out..." : "Sign Out"}
-              </button>
-            </>
-          )}
-        </div>
-        {isMobile && (
-          <div className="cursor-pointer">
-            <FaBars onClick={toggleMenu} size={24} />
+      <div className="container mx-auto flex items-center justify-between px-6 lg:px-8 h-full">
+        {/* Logo */}
+        <div className="text-2xl font-bold text-blue-800">TA Application</div>
+
+        {/* Navigation Links for Desktop */}
+        <div className="hidden lg:flex lg:items-center lg:space-x-6">
+          <div
+            className={`cursor-pointer text-lg font-medium px-6 py-2 ${
+              selectedPage === "applications"
+                ? "text-blue-800 underline underline-offset-4"
+                : "text-gray-700 hover:text-blue-800"
+            }`}
+            onClick={() => handleNavigation("applications")}
+          >
+            Applications
           </div>
-        )}
-        {isMobile && (
-          <>
-            {isOpen && (
-              <div
-                className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-40 transition-opacity duration-300"
-                onClick={toggleMenu}
-              ></div>
-            )}
-            <div
-              className={`fixed top-0 right-0 w-3/4 h-full bg-blue-400 shadow-xl z-50 flex flex-col p-4 transform transition-all duration-300 ease-in-out ${
-                isOpen ? "translate-x-0" : "translate-x-full"
-              }`}
-            >
-              <div className="flex justify-end">
-                <FaTimes
-                  onClick={toggleMenu}
-                  size={24}
-                  className="cursor-pointer"
-                />
-              </div>
-              <div
-                className={`font-bold text-lg text-black py-2 ${
-                  selectedPage === "application"
-                    ? "underline decoration-white"
-                    : ""
-                }`}
-                onClick={() => {
-                  closeMenu();
-                  handleNavbarClick("application");
-                }}
-              >
-                Application
-              </div>
-              <div
-                className={`font-bold text-lg text-black py-2 ${
-                  selectedPage === "application"
-                    ? "underline decoration-white"
-                    : ""
-                }`}
-                onClick={() => {
-                  closeMenu();
-                  handleNavbarClick("pendingApplications");
-                }}
-              >
-                Pending Application
-              </div>
-              <div
-                className={`font-bold text-lg text-black py-2 ${
-                  selectedPage === "course" ? "underline decoration-white" : ""
-                }`}
-                onClick={() => {
-                  closeMenu();
-                  handleNavbarClick("course");
-                }}
-              >
-                Course
-              </div>
-              <button
-                onClick={() => {
-                  handleSignOut();
-                  closeMenu();
-                }}
-                className={`font-bold text-lg text-black w-3/5 mt-[3vh] text-center py-2 rounded-xl hover:bg-gray-400 cursor-pointer ${
-                  loading ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-                disabled={loading} // Disable button when loading
-              >
-                {loading ? "Signing Out..." : "Sign Out"}
-              </button>
-            </div>
-          </>
-        )}
+          <div
+            className={`cursor-pointer text-lg font-medium px-6 py-2 ${
+              selectedPage === "pendingApplications"
+                ? "text-blue-800 underline underline-offset-4"
+                : "text-gray-700 hover:text-blue-800"
+            }`}
+            onClick={() => handleNavigation("pendingApplications")}
+          >
+            Pending Applications
+          </div>
+          <div
+            className={`cursor-pointer text-lg font-medium px-6 py-2 ${
+              selectedPage === "courses"
+                ? "text-blue-800 underline underline-offset-4"
+                : "text-gray-700 hover:text-blue-800"
+            }`}
+            onClick={() => handleNavigation("courses")}
+          >
+            Courses
+          </div>
+        </div>
+
+        {/* Mobile Menu Button */}
+        <button
+          className="lg:hidden text-gray-700 hover:text-blue-800 focus:outline-none"
+          onClick={toggleMenu}
+          aria-label="Toggle Menu"
+        >
+          {isOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
+        </button>
+
+        {/* Sign-Out Button */}
+        <button
+          onClick={handleSignOut}
+          className={`flex items-center justify-center text-gray-700 hover:text-red-500 transition-all duration-200 focus:outline-none ${
+            loading ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+          disabled={loading}
+        >
+          <LogOut className="w-6 h-6" />
+          {!isMobile && (
+            <span className="ml-2">
+              {loading ? "Signing Out..." : "Sign Out"}
+            </span>
+          )}
+        </button>
       </div>
+
+      {/* Mobile Dropdown Menu */}
+      {isMobile && isOpen && (
+        <div
+          className="absolute left-0 right-0 bg-gradient-to-r from-blue-200 via-blue-100 to-blue-200 shadow-md z-40 transition-all duration-300"
+        >
+          <div className="flex flex-col items-center space-y-4 py-4">
+            <div
+              className={`cursor-pointer text-lg font-medium ${
+                selectedPage === "applications"
+                  ? "text-blue-800 underline underline-offset-4"
+                  : "text-gray-700 hover:text-blue-800"
+              }`}
+              onClick={() => handleNavigation("applications")}
+            >
+              Applications
+            </div>
+            <div
+              className={`cursor-pointer text-lg font-medium ${
+                selectedPage === "pendingApplications"
+                  ? "text-blue-800 underline underline-offset-4"
+                  : "text-gray-700 hover:text-blue-800"
+              }`}
+              onClick={() => handleNavigation("pendingApplications")}
+            >
+              Pending Applications
+            </div>
+            <div
+              className={`cursor-pointer text-lg font-medium ${
+                selectedPage === "courses"
+                  ? "text-blue-800 underline underline-offset-4"
+                  : "text-gray-700 hover:text-blue-800"
+              }`}
+              onClick={() => handleNavigation("courses")}
+            >
+              Courses
+            </div>
+            {/* Removed Sign-Out Button from Mobile Dropdown */}
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
