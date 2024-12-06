@@ -160,7 +160,7 @@ func CreateTAApplication(c echo.Context, repo *repository.Repository, authClient
 		CourseAppliedID:    preferredCourse,
 		FileURL:            fileURL,
 		FileTitle:          file.Filename,
-		Status:             "Pending",
+		Status:             "New",
 	}
 
 	if err := repo.CreateTAApplication(ctx, &application); err != nil {
