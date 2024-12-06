@@ -67,7 +67,7 @@ const TADashboard = () => {
 
         {/* Forms Display */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl">
-          {forms.map((form) => (
+          {forms?.map((form) => (
             <div
               key={form.ID}
               className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow flex flex-col"
