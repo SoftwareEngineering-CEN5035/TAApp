@@ -1,39 +1,39 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 const TAApplicationPage = () => {
   const router = useRouter();
   const [formData, setFormData] = useState({
     hasPriorExperience: false,
-    preferredCourse: '', // Single string
+    preferredCourse: "", // Single string
   });
   const [file, setFile] = useState(null); // State to hold the uploaded file
   const [availableCourses, setAvailableCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   // Fetch available courses on mount
   useEffect(() => {
-    const token = localStorage.getItem('Token');
+    const token = localStorage.getItem("Token");
     if (!token) {
-      router.push('/');
+      router.push("/");
       return;
     }
 
     const fetchCourses = async () => {
       try {
-        const response = await fetch('http://localhost:9000/courses', {
+        const response = await fetch("http://localhost:9000/courses", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        if (!response.ok) throw new Error('Failed to fetch courses');
+        if (!response.ok) throw new Error("Failed to fetch courses");
         const data = await response.json();
         setAvailableCourses(data);
       } catch (err) {
-        setError('Failed to load courses');
+        setError("Failed to load courses");
       } finally {
         setLoading(false);
       }
@@ -43,47 +43,46 @@ const TAApplicationPage = () => {
   }, [router]);
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-  
+    setError("");
+
     if (!file) {
-      setError('Please upload your CV.');
+      setError("Please upload your CV.");
       return;
     }
-  
+
     try {
-      const token = localStorage.getItem('Token');
+      const token = localStorage.getItem("Token");
       const formDataToSend = new FormData();
-      formDataToSend.append('hasPriorExperience', formData.hasPriorExperience);
-      formDataToSend.append('preferredCourse', formData.preferredCourse);
-  
+      formDataToSend.append("hasPriorExperience", formData.hasPriorExperience);
+      formDataToSend.append("preferredCourse", formData.preferredCourse);
+
       // Find the course name from the list of available courses
       const course = availableCourses.find(
         (course) => course.ID === formData.preferredCourse
       );
       if (!course) {
-        setError('Invalid course selected.');
+        setError("Invalid course selected.");
         return;
       }
-  
-      formDataToSend.append('courseName', course.Name); // Append the course name
-      formDataToSend.append('file', file, file.name); // Append the file
-  
-      const response = await fetch('http://localhost:9000/ta/application', {
-        method: 'POST',
+
+      formDataToSend.append("courseName", course.Name); // Append the course name
+      formDataToSend.append("file", file, file.name); // Append the file
+
+      const response = await fetch("http://localhost:9000/ta/application", {
+        method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
         },
         body: formDataToSend,
       });
-  
-      if (!response.ok) throw new Error('Failed to submit application');
-  
-      router.push('/TADashboard');
+
+      if (!response.ok) throw new Error("Failed to submit application");
+
+      router.push("/TADashboard");
     } catch (err) {
       setError(err.message);
     }
   };
-  
 
   if (loading) return <div className="p-4">Loading...</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
