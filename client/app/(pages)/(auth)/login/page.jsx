@@ -12,6 +12,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [userType, setUserType] = useState("TA");
+  let [loading, setLoading] = useState(false);
   const router = useRouter();
   const loginUser = async (token) => {
     try {
@@ -76,6 +77,7 @@ const Login = () => {
       localStorage.setItem("Token", token);
       await loginUser(token);
     } catch (error) {
+      console.log('Error', error);
       toast.error(error.message);
     }
   };
