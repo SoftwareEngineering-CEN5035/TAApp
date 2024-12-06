@@ -16,6 +16,7 @@ type Application = {
 	CourseAppliedID: string;
     CourseName: string
 	FileURL: string;
+    PreviousExperience: boolean;
 	Status: string;
 }
 
@@ -92,6 +93,7 @@ export default function FormView({ params }) {
                 CourseAppliedID: form.CourseAppliedID,
                 CourseName: form.CourseName,
                 FileURL: form.FileURL,
+                PreviousExperience: form.PreviousExperience ?? false,
                 Status: update
             }
             await axios.patch(`${baseUrl}/forms`, data, {
@@ -137,6 +139,10 @@ export default function FormView({ params }) {
                 <div className="flex flex-row border-t border-t-[#d0dbe7] py-5 gap-x-4 max-[500px]:gap-x-14">
                     <p className="text-[#4e7297] text-sm font-normal leading-normal w-[10vw] max-[500px]:w-[25vw] max-[500px]:text-lg">Course ID</p>
                     <p className="text-[#0e141b] text-sm font-normal leading-normal max-[500px]:text-lg">{form?.CourseAppliedID}</p>
+                </div>
+                <div className="flex flex-row border-t border-t-[#d0dbe7] py-5 gap-x-4 max-[500px]:gap-x-14">
+                    <p className="text-[#4e7297] text-sm font-normal leading-normal w-[10vw] max-[500px]:w-[25vw] max-[500px]:text-lg">Has Previous Experience?</p>
+                    <p className="text-[#0e141b] text-sm font-normal leading-normal max-[500px]:text-lg">{form?.PreviousExperience ?? false}</p>
                 </div>
                 <div className="flex flex-row border-t border-t-[#d0dbe7] py-5 gap-x-4 max-[500px]:gap-x-14">
                     <p className="text-[#4e7297] text-sm font-normal leading-normal w-[10vw] max-[500px]:w-[25vw] max-[500px]:text-lg">Resume</p>

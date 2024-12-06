@@ -1,8 +1,8 @@
 import { FaBars, FaTimes } from "react-icons/fa";
-import Link from "next/link";
 import { useState, useEffect } from "react";
 import { auth } from "../../../_lib/firebase";
 import { signOut } from "firebase/auth";
+import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 
 const DepartmentNavbar = ({ setSelectedPage, selectedPage }) => {
@@ -10,10 +10,9 @@ const DepartmentNavbar = ({ setSelectedPage, selectedPage }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [navbarHeight, setNavbarHeight] = useState("h-24");
   const [loading, setLoading] = useState(false); // Loading state for sign-out
-  const pathname = usePathname();
+  const router = useRouter();
 
   const user = auth.currentUser;
-  const isNotLoggedIn = user === null;
 
   useEffect(() => {
     const handleResize = () => {
@@ -63,7 +62,7 @@ const DepartmentNavbar = ({ setSelectedPage, selectedPage }) => {
   };
 
   const handleNavbarClick = (page: string) => {
-    setSelectedPage(page);
+    router.push(`/departmentDashboard/${page}`)
     localStorage.setItem("previousDashboardItem", page);
   };
 
@@ -87,6 +86,16 @@ const DepartmentNavbar = ({ setSelectedPage, selectedPage }) => {
                 onClick={() => handleNavbarClick("application")}
               >
                 Applications
+              </div>
+              <div
+                className={`font-bold text-lg text-black ${
+                  selectedPage === "pendingApplications"
+                    ? "underline decoration-white"
+                    : ""
+                }`}
+                onClick={() => handleNavbarClick("pendingApplications")}
+              >
+                Pending Applications
               </div>
               <div
                 className={`font-bold text-lg text-black ${
@@ -122,7 +131,7 @@ const DepartmentNavbar = ({ setSelectedPage, selectedPage }) => {
               ></div>
             )}
             <div
-              className={`fixed top-0 right-0 w-3/4 h-full bg-[#f17418] shadow-xl z-50 flex flex-col p-4 transform transition-all duration-300 ease-in-out ${
+              className={`fixed top-0 right-0 w-3/4 h-full bg-blue-400 shadow-xl z-50 flex flex-col p-4 transform transition-all duration-300 ease-in-out ${
                 isOpen ? "translate-x-0" : "translate-x-full"
               }`}
             >
@@ -145,6 +154,19 @@ const DepartmentNavbar = ({ setSelectedPage, selectedPage }) => {
                 }}
               >
                 Application
+              </div>
+              <div
+                className={`font-bold text-lg text-black py-2 ${
+                  selectedPage === "application"
+                    ? "underline decoration-white"
+                    : ""
+                }`}
+                onClick={() => {
+                  closeMenu();
+                  handleNavbarClick("pendingApplications");
+                }}
+              >
+                Pending Application
               </div>
               <div
                 className={`font-bold text-lg text-black py-2 ${
