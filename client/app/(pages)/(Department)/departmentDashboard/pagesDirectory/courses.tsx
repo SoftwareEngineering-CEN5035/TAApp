@@ -158,7 +158,7 @@ export default function Courses(){
         setLoading(true);
 
         try {
-          const response = await axios.get(`${baseUrl}/coursesByTA/:${taFilter}`, {
+          const response = await axios.get(`${baseUrl}/coursesByTA/:${selectedOptions.value}`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("Token")}`,
             },

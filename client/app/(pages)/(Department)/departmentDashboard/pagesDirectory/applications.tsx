@@ -88,7 +88,7 @@ export default function Applications(){
 
         try {
             setLoading(true)
-            await axios.get(`${baseUrl}/departmentForms/${taFilter}`, {
+            await axios.get(`${baseUrl}/departmentForms/${selectedOptions.value}`, {
                 headers: {
                   Authorization: `Bearer ${localStorage.getItem("Token")}`,
                 },
