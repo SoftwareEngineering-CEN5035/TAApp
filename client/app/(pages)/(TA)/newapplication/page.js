@@ -45,19 +45,24 @@ const TAApplicationPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
+  
     if (!file) {
       setError('Please upload your CV.');
       return;
     }
-
+  
     try {
       const token = localStorage.getItem('Token');
       const formDataToSend = new FormData();
       formDataToSend.append('hasPriorExperience', formData.hasPriorExperience);
       formDataToSend.append('preferredCourse', formData.preferredCourse);
-      formDataToSend.append('file', file); // Add the file
-
+      formDataToSend.append('file', file, file.name); // Append the file along with its name
+  
+      // Print the FormData contents to the console
+      for (let pair of formDataToSend.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+      }
+  
       const response = await fetch('http://localhost:9000/ta/application', {
         method: 'POST',
         headers: {
@@ -65,14 +70,14 @@ const TAApplicationPage = () => {
         },
         body: formDataToSend,
       });
-
+  
       if (!response.ok) throw new Error('Failed to submit application');
-
+  
       router.push('/ta/dashboard');
     } catch (err) {
       setError(err.message);
     }
-  };
+  };  
 
   if (loading) return <div className="p-4">Loading...</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;

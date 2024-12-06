@@ -13,6 +13,7 @@ import (
 	"firebase.google.com/go/auth"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -40,13 +41,26 @@ func AuthUser(ctx context.Context, tokenString string, repo *repository.Reposito
 // UploadFileToS3 uploads a file to an S3 bucket and returns the file URL
 func UploadFileToS3(ctx context.Context, bucketName string, file multipart.File, fileName string) (string, error) {
 	fmt.Println("we gettin started with s3 upload n shiii")
+	fmt.Println("this the filename:", fileName)
+	awsAccessKeyID := "AKIARHQBNC7GSSEPB6B6"
+	awsSecretAccessKey := "iwUw3zUUlA+ue5hux8iNNeCZCxgsdKdSF3wRhgNT"
+	awsRegion := "us-east-1" // Replace with your region
 
-	cfg, err := config.LoadDefaultConfig(ctx)
+	// Load the AWS SDK configuration
+	cfg, err := config.LoadDefaultConfig(ctx,
+		config.WithRegion(awsRegion),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
+			awsAccessKeyID, awsSecretAccessKey, "",
+		)),
+	)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("unable to load AWS configuration: %v", err)
 	}
 
+	fmt.Println("Client boutta be made n shiiii")
+
 	s3Client := s3.NewFromConfig(cfg)
+	fmt.Println("Client was made n shiiii")
 
 	// Read file content
 	buffer := bytes.NewBuffer(nil)
@@ -62,6 +76,7 @@ func UploadFileToS3(ctx context.Context, bucketName string, file multipart.File,
 		ContentType: aws.String("application/pdf"),
 	})
 	if err != nil {
+		fmt.Println(err)
 		return "", err
 	}
 
@@ -114,10 +129,10 @@ func CreateTAApplication(c echo.Context, repo *repository.Repository, authClient
 
 	// Generate a unique file name
 	fileID := uuid.New().String()
-	fileName := fileID + filepath.Ext(file.Filename)
-
+	fileurlName := fileID + filepath.Ext(file.Filename)
+	fmt.Println("this yo filename?:", file.Filename)
 	// Upload file to S3
-	fileURL, err := UploadFileToS3(ctx, "taapplication", src, fileName)
+	fileURL, err := UploadFileToS3(ctx, "taapplication", src, fileurlName)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to upload file to S3"})
 	}
@@ -130,6 +145,7 @@ func CreateTAApplication(c echo.Context, repo *repository.Repository, authClient
 		HasPriorExperience: hasPriorExperience,
 		CourseAppliedID:    preferredCourse,
 		FileURL:            fileURL,
+		FileTitle:          file.Filename,
 		Status:             "Pending",
 	}
 
