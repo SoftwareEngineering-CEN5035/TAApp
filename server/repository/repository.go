@@ -452,31 +452,31 @@ func (r *Repository) FetchDepartmentFormsByTaID(ctx context.Context, taID string
 }
 
 // GetTAApplicationsByStatus fetches TA applications filtered by status
-func (r *Repository) GetTAApplicationsByStatus(ctx context.Context, status string) ([]models.TAApplication, error) {
-    var applications []models.TAApplication
+func (r *Repository) GetTAApplicationsByStatus(ctx context.Context, status string) ([]models.Form, error) {
+	var applications []models.Form
 
-    // Query the 'ta_applications' collection where 'status' equals the provided status
-    iter := r.client.Collection("ta_applications").Where("status", "==", status).Documents(ctx)
-    defer iter.Stop()
+	// Query the 'ta_applications' collection where 'status' equals the provided status
+	iter := r.client.Collection("ta_applications").Where("status", "==", status).Documents(ctx)
+	defer iter.Stop()
 
-    for {
-        doc, err := iter.Next()
-        if err == iterator.Done {
-            break
-        }
-        if err != nil {
-            return nil, err
-        }
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
 
-        var app models.TAApplication
-        if err := doc.DataTo(&app); err != nil {
-            return nil, err
-        }
-        app.ID = doc.Ref.ID // Assign the Firestore document ID
-        applications = append(applications, app)
-    }
+		var app models.Form
+		if err := doc.DataTo(&app); err != nil {
+			return nil, err
+		}
+		app.ID = doc.Ref.ID // Assign the Firestore document ID
+		applications = append(applications, app)
+	}
 
-    return applications, nil
+	return applications, nil
 }
 
 func (r *Repository) FetchFormsByTaID(ctx context.Context, taID string) ([]models.Form, error) {
@@ -507,8 +507,8 @@ func (r *Repository) FetchFormsByTaID(ctx context.Context, taID string) ([]model
 	return forms, nil
 }
 
-func (r *Repository) CreateTAApplication(ctx context.Context, application *models.TAApplication) error {
-	_, _, err := r.client.Collection("ta_applications").Add(ctx, application)
+func (r *Repository) CreateTAApplication(ctx context.Context, application *models.Form) error {
+	_, _, err := r.client.Collection("forms").Add(ctx, application)
 	if err != nil {
 		log.Printf("Failed to create TA application: %v", err)
 		return err
@@ -516,8 +516,8 @@ func (r *Repository) CreateTAApplication(ctx context.Context, application *model
 	return nil
 }
 
-func (r *Repository) GetTAApplicationsByUserID(ctx context.Context, userID string) ([]models.TAApplication, error) {
-	var applications []models.TAApplication
+func (r *Repository) GetTAApplicationsByUserID(ctx context.Context, userID string) ([]models.Form, error) {
+	var applications []models.Form
 	iter := r.client.Collection("ta_applications").Where("userId", "==", userID).Documents(ctx)
 	defer iter.Stop()
 
@@ -530,7 +530,7 @@ func (r *Repository) GetTAApplicationsByUserID(ctx context.Context, userID strin
 			return nil, err
 		}
 
-		var app models.TAApplication
+		var app models.Form
 		if err := doc.DataTo(&app); err != nil {
 			return nil, err
 		}
