@@ -46,10 +46,10 @@ export default async function isCorrectRole(expectedRole) {
           router.push("/InstructorDashboard");
           break;
         case "Committee":
-          router.push("/committeeDashboard");
+          router.push("/committeeDashboard/applications");
           break;
         case "Department":
-          router.push("/departmentDashboard");
+          router.push("/departmentDashboard/courses");
           break;
         default:
           router.push("/defaultDashboard"); // Fallback dashboard if role is unexpected

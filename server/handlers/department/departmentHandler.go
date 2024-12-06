@@ -24,7 +24,7 @@ func AuthUser(ctx context.Context, tokenString string, repo *repository.Reposito
 		return false, "User not found"
 	}
 
-	if user.Role != "Department" {
+	if user.Role != "Department" && user.Role != "Committee" {
 		return false, "User is not proper role"
 	}
 

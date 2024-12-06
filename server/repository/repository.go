@@ -304,6 +304,7 @@ func (r *Repository) FetchFormsByUploaderID(ctx context.Context, uploaderID stri
 	}
 	return forms, nil
 }
+
 func (r *Repository) GetFormsPending(ctx context.Context) ([]models.Form, error) {
 	var forms []models.Form
 	iter := r.client.Collection("forms").Where("status", "in", []interface{}{"Pending Applicant Approval", "TA Rejected", "Accepted"}).Documents(ctx)
