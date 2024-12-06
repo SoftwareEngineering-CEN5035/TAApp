@@ -39,7 +39,7 @@ const Login = () => {
             router.push("/instructorDashboard");
             break;
           case "Committee":
-            router.push("/committeeDashboard");
+            router.push("/committeeDashboard/applications");
             break;
           case "Department":
             router.push("/departmentDashboard/course");

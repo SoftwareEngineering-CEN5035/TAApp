@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Select, { SingleValue } from 'react-select';
 import axios, { AxiosResponse } from "axios";
+import { FiEdit2 } from "react-icons/fi";
+import { useRouter } from "next/navigation";
 
 type Application = {
     ID: string;
@@ -34,12 +36,14 @@ export default function Applications(){
     const [error, setError] = useState<string | null>(null); // For error handling
     const baseUrl = 'http://localhost:9000';
 
+    const router = useRouter();
+
     // Function to fetch applications by status
     const fetchApplicationsByStatus = async (status: string) => {
         try {
             setLoading(true);
             setError(null);
-           await axios.get(`${baseUrl}/ta_applications/status`, {
+           await axios.get(`${baseUrl}/forms/status`, {
                 params: { status }, // Pass status as query parameter
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("Token")}`, // Include JWT token
@@ -86,6 +90,10 @@ export default function Applications(){
         setApplications(sorted);
     };
 
+    const handleEdit = (formID: string) => {
+        router.push(`/committeeDecision/${formID}`);
+    };
+
     // Pagination state and handlers
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
@@ -99,7 +107,7 @@ export default function Applications(){
         }, [applications]);
     } else {
         useEffect(() => {
-            setTotalPages(Math.ceil(0 / applicationsPerPage));
+            setTotalPages(1);
             setCurrentPage(1); // Reset to first page when applications change
         }, [applications]);
     }
@@ -124,6 +132,7 @@ export default function Applications(){
     const currentApplications = []
     if (applications != null)
      {
+        console.log("test slice")
         const currentApplications = applications.slice(
             (currentPage - 1) * applicationsPerPage,
             currentPage * applicationsPerPage
@@ -142,20 +151,6 @@ export default function Applications(){
                     marginBottom: '1em'
                 }}
             >
-                {/* Left-aligned Sort text */}
-                <span style={{ marginRight: '1em' }}>Sort by:</span>
-                
-                {/* A flex container that grows and centers the buttons */}
-                <div style={{
-                    display: 'flex', 
-                    justifyContent: 'center', 
-                    flexGrow: 1, 
-                    gap: '0.5em'
-                }}>
-                    <button style={buttonStyle} onClick={() => handleSort('CourseName')}>Course Name</button>
-                    <button style={buttonStyle} onClick={() => handleSort('UploaderName')}>Uploader Name</button>
-                    <button style={buttonStyle} onClick={() => handleSort('Status')}>Status</button>
-                </div>
             </div>
 
             {/* Filter by Status Dropdown */}
@@ -173,7 +168,8 @@ export default function Applications(){
                     }}
                 />
             </div>
-
+            
+            
             {/* Loading Indicator */}
             {loading && <p style={{ textAlign: 'center' }}>Loading applications...</p>}
 
@@ -184,10 +180,10 @@ export default function Applications(){
             {!loading && applications != null && applications.length === 0 && !error && (
                 <p style={{ textAlign: 'center' }}>No applications found for the selected status.</p>
             )}
-
+            {console.log(currentApplications)}
             {!loading && applications != null && applications.length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', marginBottom: '1em' }}>
-                    {currentApplications.map((app) => (
+                    {applications.map((app) => (
                         <div 
                             key={app.ID} 
                             style={{ 
@@ -198,6 +194,7 @@ export default function Applications(){
                                 boxSizing: 'border-box'
                             }}
                         >
+
                             <div style={{ marginBottom: '0.5em' }}><strong>Course:</strong> {app.CourseName}</div>
                             <div style={{ marginBottom: '0.5em' }}><strong>Uploader:</strong> {app.UploaderName}</div>
                             <div style={{ marginBottom: '0.5em' }}><strong>Status:</strong> {app.Status}</div>
@@ -208,6 +205,12 @@ export default function Applications(){
                                 <strong>File:</strong> <a href={app.FileURL} target="_blank" rel="noopener noreferrer">View CV</a>
                             </div>
                             {/* Add more fields or actions as needed */}
+                            <button
+                            className="bg-slate-500 text-white px-3 py-1 rounded-lg mr-2 hover:bg-slate-600"
+                            onClick={() => handleEdit(app.ID)}
+                            >
+                            <FiEdit2 />
+                            </button>
                         </div>
                     ))}
                 </div>

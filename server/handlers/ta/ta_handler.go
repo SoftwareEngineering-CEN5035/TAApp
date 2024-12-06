@@ -59,8 +59,8 @@ func CreateTAApplication(c echo.Context, repo *repository.Repository, authClient
 	return c.JSON(http.StatusCreated, application)
 }
 
-// GetTAApplicationsByStatus handles fetching TA applications based on status
-func GetTAApplicationsByStatus(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
+// GetFormsByStatus handles fetching TA applications based on status
+func GetFormsByStatus(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
 	ctx := context.Background()
 
 	authHeader := c.Request().Header.Get("Authorization")
@@ -82,7 +82,7 @@ func GetTAApplicationsByStatus(c echo.Context, repo *repository.Repository, auth
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Missing 'status' query parameter"})
 	}
 
-	applications, err := repo.GetTAApplicationsByStatus(ctx, status)
+	applications, err := repo.GetFormsByStatus(ctx, status)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Error fetching applications"})
 	}

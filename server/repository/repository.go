@@ -452,11 +452,11 @@ func (r *Repository) FetchDepartmentFormsByTaID(ctx context.Context, taID string
 }
 
 // GetTAApplicationsByStatus fetches TA applications filtered by status
-func (r *Repository) GetTAApplicationsByStatus(ctx context.Context, status string) ([]models.TAApplication, error) {
-    var applications []models.TAApplication
+func (r *Repository) GetFormsByStatus(ctx context.Context, status string) ([]models.Form, error) {
+    var applications []models.Form
 
     // Query the 'ta_applications' collection where 'status' equals the provided status
-    iter := r.client.Collection("ta_applications").Where("status", "==", status).Documents(ctx)
+    iter := r.client.Collection("forms").Where("status", "==", status).Documents(ctx)
     defer iter.Stop()
 
     for {
@@ -468,7 +468,7 @@ func (r *Repository) GetTAApplicationsByStatus(ctx context.Context, status strin
             return nil, err
         }
 
-        var app models.TAApplication
+        var app models.Form
         if err := doc.DataTo(&app); err != nil {
             return nil, err
         }
