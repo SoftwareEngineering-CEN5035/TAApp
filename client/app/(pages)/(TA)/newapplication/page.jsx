@@ -41,6 +41,7 @@ const TAApplicationPage = () => {
 
     fetchCourses();
   }, [router]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -56,7 +57,6 @@ const TAApplicationPage = () => {
       formDataToSend.append("hasPriorExperience", formData.hasPriorExperience);
       formDataToSend.append("preferredCourse", formData.preferredCourse);
 
-      // Find the course name from the list of available courses
       const course = availableCourses.find(
         (course) => course.ID === formData.preferredCourse
       );
@@ -65,8 +65,8 @@ const TAApplicationPage = () => {
         return;
       }
 
-      formDataToSend.append("courseName", course.Name); // Append the course name
-      formDataToSend.append("file", file, file.name); // Append the file
+      formDataToSend.append("courseName", course.Name);
+      formDataToSend.append("file", file, file.name);
 
       const response = await fetch("http://localhost:9000/ta/application", {
         method: "POST",
@@ -84,18 +84,21 @@ const TAApplicationPage = () => {
     }
   };
 
-  if (loading) return <div className="p-4">Loading...</div>;
+  if (loading) return <div className="p-4 text-gray-500">Loading...</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">TA Application Form</h1>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="bg-white shadow-lg rounded-lg w-full max-w-3xl p-6 space-y-6">
+        <h1 className="text-3xl font-bold text-gray-800">
+          TA Application Form
+        </h1>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block mb-2">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="flex items-center">
             <input
               type="checkbox"
+              id="priorExperience"
               checked={formData.hasPriorExperience}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -103,54 +106,66 @@ const TAApplicationPage = () => {
                   hasPriorExperience: e.target.checked,
                 }))
               }
-              className="mr-2"
+              className="h-5 w-5 text-green-500 border-gray-300 rounded focus:ring-2 focus:ring-green-300"
             />
-            Have you previously served as a TA?
-          </label>
-        </div>
-
-        <div>
-          <h2 className="text-xl mb-4">Preferred Course</h2>
-          <div className="grid grid-cols-2 gap-4">
-            {availableCourses.map((course) => (
-              <label key={course.ID} className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  name="preferredCourse"
-                  checked={formData.preferredCourse === course.ID}
-                  onChange={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      preferredCourse: course.ID,
-                    }))
-                  }
-                />
-                <span>{course.Name}</span>
-              </label>
-            ))}
+            <label htmlFor="priorExperience" className="ml-3 text-gray-700">
+              Have you previously served as a TA?
+            </label>
           </div>
-        </div>
 
-        <div>
-          <label className="block mb-2">
-            Upload Your CV (PDF):
+          <div>
+            <h2 className="text-xl font-semibold text-gray-800">
+              Preferred Course
+            </h2>
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              {availableCourses.map((course) => (
+                <label
+                  key={course.ID}
+                  className="flex items-center space-x-3 p-3 bg-gray-100 border rounded-lg cursor-pointer hover:bg-gray-200"
+                >
+                  <input
+                    type="radio"
+                    name="preferredCourse"
+                    checked={formData.preferredCourse === course.ID}
+                    onChange={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        preferredCourse: course.ID,
+                      }))
+                    }
+                    className="h-5 w-5 text-green-500 border-gray-300 focus:ring-green-300"
+                  />
+                  <span className="text-gray-700">{course.Name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="cvUpload"
+              className="block text-gray-700 font-medium mb-2"
+            >
+              Upload Your CV (PDF)
+            </label>
             <input
+              id="cvUpload"
               type="file"
               accept="application/pdf"
               onChange={(e) => setFile(e.target.files[0])}
-              className="border p-2 rounded w-full"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-300"
               required
             />
-          </label>
-        </div>
+          </div>
 
-        <button
-          type="submit"
-          className="bg-green-500 text-white px-6 py-2 rounded"
-        >
-          Submit Application
-        </button>
-      </form>
+          <button
+            type="submit"
+            className="w-full bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition duration-200"
+          >
+            Submit Application
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

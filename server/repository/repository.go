@@ -363,7 +363,10 @@ func (r *Repository) FetchFormById(ctx context.Context, formID string) (*models.
 
 	return &form, nil
 }
-
+func (r *Repository) UpdateFormStatus(ctx context.Context, form *models.Form) error {
+	_, err := r.client.Collection("forms").Doc(form.ID).Set(ctx, form)
+	return err
+}
 func (r *Repository) UpdateFormStatusToApproved(ctx context.Context, formID string) error {
 	query := r.client.Collection("forms").Where("id", "==", formID).Limit(1).Documents(ctx)
 	defer query.Stop()
