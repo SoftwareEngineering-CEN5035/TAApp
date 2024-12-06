@@ -451,34 +451,6 @@ func (r *Repository) FetchDepartmentFormsByTaID(ctx context.Context, taID string
 	return forms, nil
 }
 
-// GetTAApplicationsByStatus fetches TA applications filtered by status
-func (r *Repository) GetFormsByStatus(ctx context.Context, status string) ([]models.Form, error) {
-	var applications []models.Form
-
-	// Query the 'ta_applications' collection where 'status' equals the provided status
-	iter := r.client.Collection("ta_applications").Where("status", "==", status).Documents(ctx)
-	defer iter.Stop()
-
-	for {
-		doc, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			return nil, err
-		}
-
-		var app models.Form
-		if err := doc.DataTo(&app); err != nil {
-			return nil, err
-		}
-		app.ID = doc.Ref.ID // Assign the Firestore document ID
-		applications = append(applications, app)
-	}
-
-	return applications, nil
-}
-
 func (r *Repository) FetchFormsByTaID(ctx context.Context, taID string) ([]models.Form, error) {
 	var forms []models.Form
 
