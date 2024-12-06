@@ -122,7 +122,7 @@ export default function Applications(){
                 
                 <div className="absolute w-[100%] bg-slate-50 pl-14 pt-4 h-[100%] grid grid-cols-4 max-[1000px]:grid-cols-3 max-[500px]:grid-cols-1 gap-y-5 min-h-[50vh] mt-[40vh]">
                 {applications?.map((form) => ( 
-                    <div className="h-[375px] w-[250px] hover:bg-slate-300 hover:cursor-pointer text-center rounded-lg" onClick={() => applicationRedirect(form.ID)}>
+                    <div className="h-[425px] w-[250px] hover:bg-slate-300 hover:cursor-pointer text-center rounded-lg" onClick={() => applicationRedirect(form.ID)}>
                         <iframe src={form.FileURL} className="rounded-xl hover:cursor-pointer w-[100%] h-[70%]"/>
                         <p className="text-xl text-[#1C160C] font-normal leading-normal">Application</p>
                         <p className="text-md text-base font-medium leading-normal">{form.UploaderName}</p>
