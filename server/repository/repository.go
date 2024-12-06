@@ -452,7 +452,7 @@ func (r *Repository) FetchDepartmentFormsByTaID(ctx context.Context, taID string
 }
 
 // GetTAApplicationsByStatus fetches TA applications filtered by status
-func (r *Repository) GetTAApplicationsByStatus(ctx context.Context, status string) ([]models.Form, error) {
+func (r *Repository) GetFormByStatus(ctx context.Context, status string) ([]models.Form, error) {
 	var applications []models.Form
 
 	// Query the 'ta_applications' collection where 'status' equals the provided status
