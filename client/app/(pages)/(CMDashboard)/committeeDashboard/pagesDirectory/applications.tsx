@@ -27,9 +27,12 @@ export default function Applications(){
     const [loading, setLoading] = useState<boolean>(false);
     const [statusFilter, setStatusFilter] = useState<string>('Pending'); // Default status
     const [statusOptions, setStatusOptions] = useState<SelectOption[]>([
-        { value: "Pending", label: "Pending" },
-        { value: "Approved", label: "Approved" },
+        { value: "New", label: "New" },
+        { value: "Pending Committee Auth", label: "Pending Committee Auth" },
+        { value: "Pending Applicant Approval", label: "Pending Applicant Approval" },
+        { value: "Accepted", label: "Accepted" },
         { value: "Rejected", label: "Rejected" },
+        { value: "TA Rejected", label: "TA Rejected" },
         // Add more statuses if needed
     ]);
     const [applications, setApplications] = useState<Array<Application>>([]);
