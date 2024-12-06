@@ -285,6 +285,25 @@ func (r *Repository) GetFormsByStatus(ctx context.Context, status string) ([]mod
 	return forms, nil
 }
 
+func (r *Repository) FetchFormsByUploaderID(ctx context.Context, uploaderID string) ([]models.Form, error) {
+	var forms []models.Form
+	iter := r.client.Collection("forms").Where("uploaderID", "==", uploaderID).Documents(ctx)
+	for {
+		doc, err := iter.Next()
+		if err != nil {
+			if err == iterator.Done {
+				break
+			}
+			return nil, err
+		}
+		var form models.Form
+		if err := doc.DataTo(&form); err != nil {
+			return nil, err
+		}
+		forms = append(forms, form)
+	}
+	return forms, nil
+}
 func (r *Repository) GetFormsPending(ctx context.Context) ([]models.Form, error) {
 	var forms []models.Form
 	iter := r.client.Collection("forms").Where("status", "in", []interface{}{"Pending Applicant Approval", "TA Rejected", "Accepted"}).Documents(ctx)

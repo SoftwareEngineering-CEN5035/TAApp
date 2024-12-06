@@ -108,7 +108,7 @@ const NewUserWelcome = () => {
           router.push("/departmentDashboard/course");
           break;
         case "TA":
-          router.push("/tadashboard");
+          router.push("/TADashboard");
           break;
         case "Instructor":
           router.push("/instructorDashboard");

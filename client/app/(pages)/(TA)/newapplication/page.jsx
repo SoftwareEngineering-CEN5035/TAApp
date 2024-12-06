@@ -78,7 +78,7 @@ const TAApplicationPage = () => {
   
       if (!response.ok) throw new Error('Failed to submit application');
   
-      router.push('/ta/dashboard');
+      router.push('/TADashboard');
     } catch (err) {
       setError(err.message);
     }
