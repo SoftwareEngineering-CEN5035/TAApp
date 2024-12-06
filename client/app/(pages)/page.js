@@ -1,49 +1,37 @@
-// pages/check-login.js
-'use client'
-import { useEffect, useState } from "react";
-import { auth } from "../_lib/firebase"; // Import your Firebase config
+"use client";
 
-const CheckLogin = () => {
-  const [userData, setUserData] = useState(null);
-  const [error, setError] = useState(null);
+import { useRouter } from "next/navigation";
 
-  useEffect(() => {
-    const getTokenAndSend = async () => {
-      try {
-        const user = auth.currentUser;
-        if (user) {
-          // Get the Firebase ID Token
-          const idToken = await user.getIdToken();
-
-          // Send the token to your backend
-          console.log(idToken)
-        } else {
-          setError("No user is logged in");
-        }
-      } catch (err) {
-        setError("Error fetching the token or making the request");
-        console.error(err);
-      }
-    };
-
-    // Call the function to get token and send the request
-    getTokenAndSend();
-  }, []); // Empty dependency array means this runs only once when the page loads
+const HomePage = () => {
+  const router = useRouter();
 
   return (
-    <div>
-      <h1>Check User Login Status</h1>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {userData ? (
-        <div>
-          <p>User is logged in with UID: {userData.uid}</p>
-          {/* Render any other user data if necessary */}
-        </div>
-      ) : (
-        <p>Loading...</p>
-      )}
+    <div className="min-h-screen w-screen bg-gradient-to-br from-blue-50 to-blue-200 flex flex-col items-center justify-center">
+      <header className="text-center">
+        <h1 className="text-5xl font-bold text-blue-800 mb-6">
+          Welcome to the TA Assistant App
+        </h1>
+      </header>
+
+      <div className="flex space-x-6">
+        {/* Login Button */}
+        <button
+          onClick={() => router.push("/login")}
+          className="px-6 py-3 bg-blue-600 text-white text-lg font-medium rounded-lg shadow-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-all duration-200"
+        >
+          Log In
+        </button>
+
+        {/* Signup Button */}
+        <button
+          onClick={() => router.push("/signup")}
+          className="px-6 py-3 bg-green-600 text-white text-lg font-medium rounded-lg shadow-lg hover:bg-green-700 focus:ring-4 focus:ring-green-300 transition-all duration-200"
+        >
+          Sign Up
+        </button>
+      </div>
     </div>
   );
 };
 
-export default CheckLogin;
+export default HomePage;
