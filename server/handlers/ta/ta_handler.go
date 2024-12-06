@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log"
 	"mime/multipart"
 	"net/http"
+	"os"
 	"path/filepath"
 	"ta-manager-api/models"
 	"ta-manager-api/repository"
@@ -16,9 +18,16 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 )
 
+func LoadEnvVariables() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
+}
 func AuthUser(ctx context.Context, tokenString string, repo *repository.Repository, authClient *auth.Client) (bool, string) {
 	token, err := authClient.VerifyIDToken(ctx, tokenString)
 	if err != nil {
@@ -42,10 +51,15 @@ func AuthUser(ctx context.Context, tokenString string, repo *repository.Reposito
 func UploadFileToS3(ctx context.Context, bucketName string, file multipart.File, fileName string) (string, error) {
 	fmt.Println("we gettin started with s3 upload n shiii")
 	fmt.Println("this the filename:", fileName)
-	awsAccessKeyID := "AKIARHQBNC7GSSEPB6B6"
-	awsSecretAccessKey := "iwUw3zUUlA+ue5hux8iNNeCZCxgsdKdSF3wRhgNT"
-	awsRegion := "us-east-1" // Replace with your region
+	LoadEnvVariables()
 
+	awsAccessKeyID := os.Getenv("AWS_ACCESS_KEY_ID")
+	awsSecretAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+	awsRegion := os.Getenv("AWS_REGION")
+
+	if awsAccessKeyID == "" || awsSecretAccessKey == "" || awsRegion == "" {
+		return "", fmt.Errorf("AWS credentials or region not found in environment variables")
+	}
 	// Load the AWS SDK configuration
 	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithRegion(awsRegion),
