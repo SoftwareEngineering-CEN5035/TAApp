@@ -32,6 +32,13 @@ const ApplicationDecision = ({ params }) => {
   }, [formId]);
 
   const handleDecision = async (decision) => {
+    if (application?.Status !== "Pending Applicant Approval") {
+      alert(
+        "You can only make decisions on applications with 'Pending Applicant Approval' status."
+      );
+      return;
+    }
+
     try {
       const token = localStorage.getItem("Token");
       await axios.patch(
@@ -39,9 +46,14 @@ const ApplicationDecision = ({ params }) => {
         { status: decision === "accept" ? "Accepted" : "TA Rejected" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      alert(
+        `Application has been ${
+          decision === "accept" ? "accepted" : "rejected"
+        }.`
+      );
       router.push("/TADashboard");
     } catch (err) {
-      alert("Failed to update status. Try again.");
+      alert("Failed to update status. Please try again.");
     }
   };
 
@@ -51,6 +63,7 @@ const ApplicationDecision = ({ params }) => {
         Loading...
       </div>
     );
+
   if (error)
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -71,6 +84,9 @@ const ApplicationDecision = ({ params }) => {
         <strong>Previous Experience:</strong>{" "}
         {application.PreviousExperience ? "Yes" : "No"}
       </p>
+      <p className="mt-2">
+        <strong>Status:</strong> {application.Status}
+      </p>
       <a
         href={application.FileURL}
         target="_blank"
@@ -79,20 +95,22 @@ const ApplicationDecision = ({ params }) => {
       >
         View Application File
       </a>
-      <div className="mt-6 flex space-x-4">
-        <button
-          onClick={() => handleDecision("accept")}
-          className="bg-green-600 text-white font-semibold px-4 py-2 rounded"
-        >
-          Accept
-        </button>
-        <button
-          onClick={() => handleDecision("deny")}
-          className="bg-red-600 text-white font-semibold px-4 py-2 rounded"
-        >
-          Deny
-        </button>
-      </div>
+      {application.Status === "Pending Applicant Approval" && (
+        <div className="mt-6 flex space-x-4">
+          <button
+            onClick={() => handleDecision("accept")}
+            className="bg-green-600 text-white font-semibold px-4 py-2 rounded"
+          >
+            Accept
+          </button>
+          <button
+            onClick={() => handleDecision("deny")}
+            className="bg-red-600 text-white font-semibold px-4 py-2 rounded"
+          >
+            Deny
+          </button>
+        </div>
+      )}
     </div>
   );
 };
