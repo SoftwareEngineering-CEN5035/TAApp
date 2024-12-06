@@ -77,6 +77,7 @@ const Login = () => {
       localStorage.setItem("Token", token);
       await loginUser(token);
     } catch (error) {
+      console.log('Error', error);
       toast.error(error.message);
     }
   };

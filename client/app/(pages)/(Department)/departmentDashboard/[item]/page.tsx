@@ -6,6 +6,7 @@ import DepartmentNavbar from "../../navbars/departmentNavbar";
 import Courses from "../pagesDirectory/courses";
 import Applications from "../pagesDirectory/applications";
 import { useRouter } from "next/navigation";
+import PendingApplications from "../pagesDirectory/pendingApplications";
 
 const DashboardPage = ({ params }) => {
   const item = params.item || "course";
@@ -34,6 +35,8 @@ const DashboardPage = ({ params }) => {
         return <Courses />;
       case "application":
         return <Applications />;
+      case "pendingApplications":
+        return <PendingApplications />;
     }
   };
 

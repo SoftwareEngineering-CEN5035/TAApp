@@ -105,7 +105,7 @@ const NewUserWelcome = () => {
       console.log(role);
       switch (role) {
         case "Department":
-          router.push("/departmentdashboard");
+          router.push("/departmentDashboard/course");
           break;
         case "TA":
           router.push("/tadashboard");

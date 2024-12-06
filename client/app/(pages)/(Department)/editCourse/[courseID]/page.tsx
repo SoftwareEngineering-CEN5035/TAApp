@@ -8,13 +8,13 @@ import { useRouter } from "next/navigation";
 import { IoMdArrowBack } from "react-icons/io";
 
 type Course = {
-        ID: string,
-        Name: string,
-        Type: string,
-        InstructorName: string,
-        InstructorID: string, 
-        TaList: Array<string>,
-        TaIDList: Array<string>,
+    ID: string,
+    Name: string,
+    Type: string,
+    InstructorName: string,
+    InstructorID: string, 
+    TaList: Array<string>,
+    TaIDList: Array<string>,
 }
 
 type SelectOption = {

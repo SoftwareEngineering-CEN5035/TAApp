@@ -285,6 +285,29 @@ func (r *Repository) GetNewForms(ctx context.Context) ([]models.Form, error) {
 	return forms, nil
 }
 
+func (r *Repository) GetFormsPending(ctx context.Context) ([]models.Form, error) {
+	var forms []models.Form
+	iter := r.client.Collection("forms").Where("status", "in", []interface{}{"Pending Applicant Approval", "TA Rejected", "Accepted"}).Documents(ctx)
+	defer iter.Stop()
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			log.Printf("Error retrieving forms: %v", err)
+			return nil, err
+		}
+		var form models.Form
+		if err := doc.DataTo(&form); err != nil {
+			log.Printf("Error decoding form data: %v", err)
+			return nil, err
+		}
+		forms = append(forms, form)
+	}
+	return forms, nil
+}
+
 func (r *Repository) GetAllCourses(ctx context.Context) ([]models.Course, error) {
 	var courses []models.Course
 	iter := r.client.Collection("courses").Documents(ctx)

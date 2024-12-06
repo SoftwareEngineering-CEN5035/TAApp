@@ -12,6 +12,7 @@ type Application = {
 	CourseAppliedID: string;
     CourseName: string
 	FileURL: string;
+    PreviousExperience: boolean;
 	Status: string;
 }
 
@@ -87,7 +88,7 @@ export default function Applications(){
 
         try {
             setLoading(true)
-            await axios.get(`${baseUrl}/formsByTa/:${taFilter}`, {
+            await axios.get(`${baseUrl}/departmentForms/${taFilter}`, {
                 headers: {
                   Authorization: `Bearer ${localStorage.getItem("Token")}`,
                 },
