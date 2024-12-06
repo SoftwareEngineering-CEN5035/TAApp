@@ -1,70 +1,45 @@
-import { FaBars, FaTimes } from "react-icons/fa";
-import { useState, useEffect } from "react";
-import { auth } from "../_lib/firebase";
-import { signOut } from "firebase/auth"; 
-import { usePathname } from "next/navigation";
-import Link from "next/link";
+"use client";
+import { useEffect, useState } from "react";
+import { auth } from "../../../_lib/firebase";
+import { signOut } from "firebase/auth";
+import { useRouter, usePathname } from "next/navigation";
+import { LogOut } from "lucide-react";
 
 const InstructorNavbar = ({ setSelectedPage, selectedPage }) => {
-  const [isMobile, setIsMobile] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const [navbarHeight, setNavbarHeight] = useState("h-24");
+  const [navbarHeight, setNavbarHeight] = useState("h-20");
   const [loading, setLoading] = useState(false);
-  const [userRole, setUserRole] = useState(null); // State for user role
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const router = useRouter();
   const pathname = usePathname();
-  
-  const user = auth.currentUser;
-  const isNotLoggedIn = user === null;
 
-  // Get the role from localStorage or set to "Unknown" if not available
+  // Adjust navbar height on scroll
   useEffect(() => {
-    const role = localStorage.getItem("role");
-    setUserRole(role || "Unknown"); // Fallback to "Unknown" if no role is found
-  }, []);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 1025);
+    const handleScroll = () => {
+      setNavbarHeight(window.scrollY > 50 ? "h-16" : "h-20");
     };
 
-    const handleScroll = () => {
-      if (isMobile) {
-        setNavbarHeight("h-16");
-      } else {
-        const scrollThreshold = 440;
-        if (window.scrollY > scrollThreshold) {
-          setNavbarHeight("h-16");
-        } else {
-          setNavbarHeight("h-24");
-        }
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Reset isCollapsed state when resizing above lg
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsCollapsed(false);
       }
     };
 
-    handleResize();
     window.addEventListener("resize", handleResize);
-    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [isMobile]);
-
-  const toggleMenu = () => {
-    setIsOpen((prev) => !prev);
-  };
-
-  const closeMenu = () => {
-    setIsOpen(false);
-  };
-
+  // Handle sign out
   const handleSignOut = async () => {
     setLoading(true);
-    console.log("Attempting to sign out...");
     try {
       await signOut(auth);
-      console.log("Successfully signed out!");
-      localStorage.removeItem("role"); // Clear role on sign out
+      router.push("/login");
     } catch (error) {
       console.error("Sign out error: ", error);
     } finally {
@@ -72,113 +47,84 @@ const InstructorNavbar = ({ setSelectedPage, selectedPage }) => {
     }
   };
 
+  // Update page on navigation
+  const handleNavigation = (page) => {
+    setSelectedPage(page);
+    router.push(`/${page}`);
+    setIsCollapsed(false); // Close menu after navigation on mobile
+  };
+
   return (
-    <nav className={`sticky top-0 w-full overflow-hidden h-[10vh] ${navbarHeight} bg-blue-300 border-b-[1px] border-black z-50 transition-all duration-300`}>
-      <div className="w-full h-full flex justify-between items-center px-4 sm:px-6 md:px-6">
-        <div className="justify-between flex space-x-8 items-center">
-          {!isMobile && (
-            <>
-              <div className={`font-bold text-lg text-black cursor-pointer ${pathname === "/instructorDashboard" ?  "underline decoration-white" : ""}`}>
-                Dashboard
-              </div>
-              {/* User Role */}
-              {userRole && (
-                <div className="font-medium text-lg text-black">
-                  Role: {userRole}
-                </div>
-              )}
-              {/* Navigation Links */}
-              <Link href="/taManagement" passHref>
-                <div
-                  className={`font-bold text-lg text-black cursor-pointer ${pathname === "/taManagement" ? "underline decoration-white" : ""}`}
-                  onClick={() => setSelectedPage("taManagement")}
-                >
-                  TA Management
-                </div>
-              </Link>
-              <Link href="/taFeedback" passHref>
-                <div
-                  className={`font-bold text-lg text-black cursor-pointer ${pathname === "/taFeedback" ? "underline decoration-white" : ""}`}
-                  onClick={() => setSelectedPage("taFeedback")}
-                >
-                  TA Feedback
-                </div>
-              </Link>
-              <Link href="/courseOverview" passHref>
-                <div
-                  className={`font-bold text-lg text-black cursor-pointer ${pathname === "/courseOverview" ? "underline decoration-white" : ""}`}
-                  onClick={() => setSelectedPage("courseOverview")}
-                >
-                  Course Overview
-                </div>
-              </Link>
-              <Link href="/historicalRecords" passHref>
-                <div
-                  className={`font-bold text-lg text-black cursor-pointer ${pathname === "/historicalRecords" ? "underline decoration-white" : ""}`}
-                  onClick={() => setSelectedPage("historicalRecords")}
-                >
-                  Historical Records
-                </div>
-              </Link>
-              <button
-                onClick={handleSignOut}
-                className={`font-bold text-lg text-black cursor-pointer absolute right-2 bg-red-300 hover:bg-red-200 h-[45px] rounded-lg w-[80px] ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
-                disabled={loading}
-              >
-                {loading ? "Signing Out..." : "Sign Out"}
-              </button>
-            </>
-          )}
-        </div>
-        {isMobile && (
-          <div className="cursor-pointer">
-            <FaBars onClick={toggleMenu} size={24} />
+    <nav
+      className={`sticky top-0 w-full bg-gradient-to-r from-blue-200 via-blue-100 to-blue-200 shadow-md z-50 ${navbarHeight} transition-all duration-300`}
+    >
+      <div className="container mx-auto flex items-center justify-between px-6 lg:px-8 h-full">
+        {/* Logo */}
+        <div className="text-2xl font-bold text-blue-800">Instructor Portal</div>
+
+        {/* Navigation Links */}
+        <div
+          className={`lg:flex flex-col lg:flex-row lg:items-center lg:space-x-6 ${isCollapsed ? "flex" : "hidden lg:flex"
+            } absolute lg:static top-full left-0 w-full lg:w-auto ${isCollapsed
+              ? "bg-gradient-to-r from-blue-200 via-blue-100 to-blue-200"
+              : "lg:bg-transparent"
+            } shadow-md lg:shadow-none z-40 transition-all duration-300`}
+        >
+          <div
+            className={`cursor-pointer text-lg font-medium px-6 lg:px-0 py-2 lg:py-0 ${pathname === "/instructorDashboard"
+                ? "text-blue-800 underline underline-offset-4"
+                : "text-gray-700 hover:text-blue-800"
+              }`}
+            onClick={() => handleNavigation("instructorDashboard")}
+          >
+            Dashboard
           </div>
-        )}
-        {isMobile && (
-          <>
-            {isOpen && (
-              <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-40 transition-opacity duration-300" onClick={toggleMenu}></div>
-            )}
-            <div className={`fixed top-0 right-0 w-3/4 h-full bg-[#f17418] shadow-xl z-50 flex flex-col p-4 transform transition-all duration-300 ease-in-out ${isOpen ? "translate-x-0" : "translate-x-full"}`}>
-              <div className="flex justify-end">
-                <FaTimes onClick={toggleMenu} size={24} className="cursor-pointer" />
-              </div>
-              <Link href="/taManagement" passHref>
-                <div className={`font-bold text-lg text-black py-2 ${pathname === "/instructorDashboard" ? "underline decoration-white" : ""}`} onClick={() => { closeMenu(); setSelectedPage("instructorDashboard"); }}>
-                  Dashboard
-                </div>
-              </Link>
-              <Link href="/taManagement" passHref>
-                <div className={`font-bold text-lg text-black py-2 ${pathname === "/taManagement" ? "underline decoration-white" : ""}`} onClick={() => { closeMenu(); setSelectedPage("taManagement"); }}>
-                  TA Management
-                </div>
-              </Link>
-              <Link href="/taFeedback" passHref>
-                <div className={`font-bold text-lg text-black py-2 ${pathname === "/taFeedback" ? "underline decoration-white" : ""}`} onClick={() => { closeMenu(); setSelectedPage("taFeedback"); }}>
-                  TA Feedback
-                </div>
-              </Link>
-              <Link href="/courseOverview" passHref>
-                <div className={`font-bold text-lg text-black py-2 ${pathname === "/courseOverview" ? "underline decoration-white" : ""}`} onClick={() => { closeMenu(); setSelectedPage("courseOverview"); }}>
-                  Course Overview
-                </div>
-              </Link>
-              <Link href="/historicalRecords" passHref>
-                <div className={`font-bold text-lg text-black py-2 ${pathname === "/historicalRecords" ? "underline decoration-white" : ""}`} onClick={() => { closeMenu(); setSelectedPage("historicalRecords"); }}>
-                  Historical Records
-                </div>
-              </Link>
-              <button
-                onClick={() => { handleSignOut(); closeMenu(); }}
-                className={`font-bold text-lg text-black w-3/5 mt-[3vh] text-center py-2 rounded-lg bg-red-300 hover:bg-red-200 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
-                disabled={loading}
-              >
-                {loading ? "Signing Out..." : "Sign Out"}
-              </button>
-            </div>
-          </>
-        )}
+          <div
+            className={`cursor-pointer text-lg font-medium px-6 lg:px-0 py-2 lg:py-0 ${pathname === "/taManagement"
+                ? "text-blue-800 underline underline-offset-4"
+                : "text-gray-700 hover:text-blue-800"
+              }`}
+            onClick={() => handleNavigation("taManagement")}
+          >
+            TA Management
+          </div>
+          <div
+            className={`cursor-pointer text-lg font-medium px-6 lg:px-0 py-2 lg:py-0 ${pathname === "/taFeedback"
+                ? "text-blue-800 underline underline-offset-4"
+                : "text-gray-700 hover:text-blue-800"
+              }`}
+            onClick={() => handleNavigation("taFeedback")}
+          >
+            TA Feedback
+          </div>
+          <div
+            className={`cursor-pointer text-lg font-medium px-6 lg:px-0 py-2 lg:py-0 ${pathname === "/courseOverview"
+                ? "text-blue-800 underline underline-offset-4"
+                : "text-gray-700 hover:text-blue-800"
+              }`}
+            onClick={() => handleNavigation("courseOverview")}
+          >
+            Course Overview
+          </div>
+        </div>
+
+        {/* Collapsible Menu Button */}
+        <button
+          className="lg:hidden text-gray-700 hover:text-blue-800 focus:outline-none"
+          onClick={() => setIsCollapsed((prev) => !prev)}
+        >
+          {isCollapsed ? "Close" : "Menu"}
+        </button>
+
+        {/* Sign-Out Button */}
+        <button
+          onClick={handleSignOut}
+          className={`flex items-center justify-center text-gray-700 hover:text-red-500 transition-all duration-200 focus:outline-none ${loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          disabled={loading}
+        >
+          <LogOut className="w-6 h-6" />
+        </button>
       </div>
     </nav>
   );

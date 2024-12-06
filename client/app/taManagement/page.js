@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
-import InstructorNavbar from '../navbars/InstructorNavbar';  // Import the Navbar
+import InstructorNavbar from '../(pages)/(Department)/navbars/instructorNavbar';  // Import the Navbar
 
 const TAManagementPage = () => {
   const [courses, setCourses] = useState([]);

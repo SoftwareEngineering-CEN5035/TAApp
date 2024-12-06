@@ -1,143 +1,145 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ToastContainer, toast } from 'react-toastify';
+import { useState } from "react";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import InstructorNavbar from "../navbars/InstructorNavbar"; // Adjust the path based on your file structure
+import InstructorNavbar from "../(pages)/(Department)/navbars/instructorNavbar"; // Adjust the path as needed
 
 const InstructorDashboardPage = () => {
-  const router = useRouter();
-  
-  // Declare selectedPage state
-  const [selectedPage, setSelectedPage] = useState("taManagement"); // Default page can be set here
+  const [selectedPage, setSelectedPage] = useState("taManagement");
+  const [sortBy, setSortBy] = useState("courseName");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const handleWidgetClick = (path) => {
-    router.push(path);
-  };
+  // Sample data that will be replaced with live information from the backend
+  const courses = [
+    {
+      courseName: "Advanced AI",
+      taName: "John Doe",
+      semester: "Fall 2024",
+      applicationStatus: "Approved",
+    },
+    {
+      courseName: "Data Mining",
+      taName: "Jane Roe",
+      semester: "Spring 2024",
+      applicationStatus: "Pending",
+    },
+    {
+      courseName: "Machine Learning",
+      taName: "Alice",
+      semester: "Winter 2024",
+      applicationStatus: "Rejected",
+    },
+    {
+      courseName: "Cybersecurity",
+      taName: "Bob",
+      semester: "Summer 2024",
+      applicationStatus: "Approved",
+    },
+  ];
+
+  // Sort courses based on selected criteria
+  const sortedCourses = [...courses].sort((a, b) => {
+    if (sortBy === "courseName") return a.courseName.localeCompare(b.courseName);
+    if (sortBy === "semester") return a.semester.localeCompare(b.semester);
+    if (sortBy === "applicationStatus")
+      return a.applicationStatus.localeCompare(b.applicationStatus);
+    return 0;
+  });
+
+  // Pagination logic
+  const itemsPerPage = 9;
+  const totalPages = Math.ceil(sortedCourses.length / itemsPerPage);
+  const displayedCourses = sortedCourses.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
-    <div className="dashboard min-h-screen w-screen bg-gradient-to-br from-blue-50 to-blue-200 flex flex-col items-center">
-
-      <InstructorNavbar 
-        selectedPage={selectedPage} 
-        setSelectedPage={setSelectedPage} 
+    <div className="min-h-screen w-screen bg-gradient-to-br from-blue-50 to-blue-200 flex flex-col">
+      {/* Navbar */}
+      <InstructorNavbar
+        selectedPage={selectedPage}
+        setSelectedPage={setSelectedPage}
       />
 
-      {/* Instructor Dashboard Title */}
-      <h1 className="text-4xl font-bold text-white mt-8">Instructor Dashboard</h1>
+      <main className="flex-1 flex flex-col items-center py-8 px-4">
+        <h1 className="text-3xl font-bold text-blue-800 mb-6">Upcoming Courses & TA's</h1>
 
-      {/* Container to center widgets in the middle */}
-      <div className="dashboard-content flex-1 flex justify-center items-center">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {/* TA Management Widget */}
-          <div className="widget" onClick={() => handleWidgetClick('/taManagement')}>
-            <h2>TA Management</h2>
-            <p>View and manage Teaching Assistants assigned to your courses.</p>
-          </div>
-
-          {/* Performance Feedback Widget */}
-          <div className="widget" onClick={() => handleWidgetClick('/performanceFeedback')}>
-            <h2>TA Feedback</h2>
-            <p>Provide and track performance evaluations for TAs.</p>
-          </div>
-
-          {/* Course Overview Widget */}
-          <div className="widget" onClick={() => handleWidgetClick('/courseOverview')}>
-            <h2>Course Overview</h2>
-            <p>Check the courses you are teaching and the assigned TAs.</p>
-          </div>
-
-          {/* Historical Records Widget */}
-          <div className="widget" onClick={() => handleWidgetClick('/historicalRecords')}>
-            <h2>Historical Records</h2>
-            <p>Review historical TA assignments and feedback for future consideration.</p>
-          </div>
+        {/* Sort Options */}
+        <div className="flex flex-wrap justify-center gap-4 mb-8">
+          <label className="flex items-center space-x-3">
+            <span className="font-semibold text-gray-700 text-lg">Sort By:</span>
+            <select
+              className="border border-gray-300 rounded-lg px-4 py-3 text-gray-700 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+            >
+              <option value="courseName">Course Name</option>
+              <option value="semester">Semester</option>
+              <option value="applicationStatus">Application Status</option>
+            </select>
+          </label>
         </div>
-      </div>
 
-      {/* Toastify Container for custom notifications */}
+        {/* Course Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 w-full max-w-7xl">
+          {displayedCourses.map((course, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-xl shadow-lg p-6 flex flex-col justify-between transform transition-transform hover:scale-105"
+            >
+              <h2 className="text-2xl font-bold text-blue-800 mb-4">
+                {course.courseName}
+              </h2>
+              <p className="text-lg text-gray-700">
+                <span className="font-semibold">TA Name:</span> {course.taName}
+              </p>
+              <p className="text-lg text-gray-700">
+                <span className="font-semibold">Semester:</span> {course.semester}
+              </p>
+              <p className="text-lg text-gray-700">
+                <span className="font-semibold">Status:</span>{" "}
+                {course.applicationStatus}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Pagination */}
+        <div className="flex justify-center items-center mt-8 space-x-4">
+          <button
+            className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              className={`px-4 py-2 rounded-lg ${currentPage === i + 1
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200 hover:bg-gray-300"
+                }`}
+              onClick={() => setCurrentPage(i + 1)}
+            >
+              {i + 1}
+            </button>
+          ))}
+          <button
+            className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50"
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
+      </main>
+
       <ToastContainer />
-
-      <style jsx>{`
-        .dashboard {
-          text-align: center;
-          min-height: 100vh;
-          color: #fff; /* White text for contrast */
-        }
-
-        h1 {
-          font-family: 'Roboto', sans-serif; /* Custom font for the title */
-          font-size: 2.5rem;
-          color: #fff; /* White text for heading */
-          margin-bottom: 30px;
-        }
-
-        .dashboard-content {
-          flex: 1;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          width: 100%;
-        }
-
-        .dashboard-content .grid {
-          display: grid;
-          grid-template-columns: repeat(1, 1fr); /* Default to 1 column for small screens */
-          gap: 20px;
-          justify-items: center;
-        }
-
-        @media (min-width: 640px) {
-          .dashboard-content .grid {
-            grid-template-columns: repeat(2, 1fr); /* 2 columns on medium screens */
-          }
-        }
-
-        @media (min-width: 768px) {
-          .dashboard-content .grid {
-            grid-template-columns: repeat(3, 1fr); /* 3 columns on larger screens */
-          }
-        }
-
-        @media (min-width: 1024px) {
-          .dashboard-content .grid {
-            grid-template-columns: repeat(4, 1fr); /* 4 columns on even larger screens */
-          }
-        }
-
-        .widget {
-          background: #ffffff;
-          border-radius: 12px;
-          padding: 20px;
-          width: 250px; /* Fixed width */
-          height: 250px; /* Fixed height */
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-          cursor: pointer;
-          transition: transform 0.2s, box-shadow 0.2s ease;
-          text-align: left;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          font-family: 'Arial', sans-serif; /* Custom font for the widgets */
-        }
-
-        .widget:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-        }
-
-        .widget h2 {
-          margin-bottom: 10px;
-          font-size: 1.5rem;
-          color: #333; /* Darker text color for widget titles */
-        }
-
-        .widget p {
-          font-size: 1rem;
-          color: #555; /* Slightly lighter text color for widget descriptions */
-        }
-      `}</style>
     </div>
   );
 };
