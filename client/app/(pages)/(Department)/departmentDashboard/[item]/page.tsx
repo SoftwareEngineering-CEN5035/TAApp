@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getAuth, onAuthStateChanged } from "@firebase/auth";
+import { onAuthStateChanged } from "@firebase/auth";
 import DepartmentNavbar from "../../navbars/departmentNavbar";
 import Courses from "../pagesDirectory/courses";
 import Applications from "../pagesDirectory/applications";
 import { useRouter } from "next/navigation";
+import { auth } from "../../../../_lib/firebase";
 import PendingApplications from "../pagesDirectory/pendingApplications";
 
 const DashboardPage = ({ params }) => {
@@ -14,7 +15,6 @@ const DashboardPage = ({ params }) => {
   const [selectedPage, setSelectedPage] = useState(item);
 
   useEffect(() => {
-    const auth = getAuth();
     if (item) {
       localStorage.setItem("previousDashboardItem", item);
     }
