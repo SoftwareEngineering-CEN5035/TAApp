@@ -145,7 +145,7 @@ func (r *Repository) UpdateUser(ctx context.Context, user *models.User) error {
 }
 
 func (r *Repository) UpdateCourse(ctx context.Context, course *models.Course) error {
-    courseQuery := r.client.Collection("courses").Where("id", "==", course.ID).Limit(1)
+	courseQuery := r.client.Collection("courses").Where("id", "==", course.ID).Limit(1)
 	courseDocs, err := courseQuery.Documents(ctx).GetAll()
 	if err != nil {
 		log.Printf("Failed to retrieve course by ID: %v", err)
@@ -165,7 +165,7 @@ func (r *Repository) UpdateCourse(ctx context.Context, course *models.Course) er
 		"instructorName": course.InstructorName,
 		"instructorID":   course.InstructorID,
 		"taList":         course.TaList,
-		"taIDList": 	  course.TaIDList,
+		"taIDList":       course.TaIDList,
 	}, firestore.MergeAll)
 	if err != nil {
 		log.Printf("Failed to update course: %v", err)
@@ -177,7 +177,7 @@ func (r *Repository) UpdateCourse(ctx context.Context, course *models.Course) er
 }
 
 func (r *Repository) UpdateFormDepartment(ctx context.Context, form *models.Form) error {
-    formQuery := r.client.Collection("forms").Where("id", "==", form.ID).Limit(1)
+	formQuery := r.client.Collection("forms").Where("id", "==", form.ID).Limit(1)
 	formDocs, err := formQuery.Documents(ctx).GetAll()
 	if err != nil {
 		log.Printf("Failed to retrieve form by ID: %v", err)
@@ -205,7 +205,7 @@ func (r *Repository) UpdateFormDepartment(ctx context.Context, form *models.Form
 
 func (r *Repository) DeleteCourseByID(ctx context.Context, courseID string) error {
 	query := r.client.Collection("courses").Where("id", "==", courseID).Limit(1).Documents(ctx)
-	defer query.Stop() 
+	defer query.Stop()
 	doc, err := query.Next()
 	if err != nil {
 		if err == iterator.Done {
@@ -372,7 +372,7 @@ func (r *Repository) UpdateFormStatusToApproved(ctx context.Context, formID stri
 }
 
 func (r *Repository) AddTaToCourse(ctx context.Context, courseID, taID string) error {
-	query := r.client.Collection("courses").Where("id", "==",courseID).Limit(1).Documents(ctx)
+	query := r.client.Collection("courses").Where("id", "==", courseID).Limit(1).Documents(ctx)
 	defer query.Stop()
 
 	doc, err := query.Next()
@@ -421,7 +421,7 @@ func (r *Repository) FetchCoursesByTaID(ctx context.Context, taID string) ([]mod
 		courses = append(courses, course)
 	}
 
-    return courses, nil 
+	return courses, nil
 }
 
 func (r *Repository) FetchDepartmentFormsByTaID(ctx context.Context, taID string) ([]models.Form, error) {
@@ -448,37 +448,65 @@ func (r *Repository) FetchDepartmentFormsByTaID(ctx context.Context, taID string
 		forms = append(forms, form)
 	}
 
-    return forms, nil 
+	return forms, nil
 }
 
-func (r *Repository) FetchFormsByTaID(ctx context.Context, taID string) ([]models.Form, error) {
-    var forms []models.Form
+// GetTAApplicationsByStatus fetches TA applications filtered by status
+func (r *Repository) GetTAApplicationsByStatus(ctx context.Context, status string) ([]models.TAApplication, error) {
+    var applications []models.TAApplication
 
-    query := r.client.Collection("forms").Where("uploaderID", "==", taID)
-    iter := query.Documents(ctx)
-
+    // Query the 'ta_applications' collection where 'status' equals the provided status
+    iter := r.client.Collection("ta_applications").Where("status", "==", status).Documents(ctx)
     defer iter.Stop()
 
     for {
         doc, err := iter.Next()
         if err == iterator.Done {
-            break 
+            break
         }
         if err != nil {
-            return nil, err 
+            return nil, err
         }
 
-        var form models.Form
-        if err := doc.DataTo(&form); err != nil {
-            return nil, err 
+        var app models.TAApplication
+        if err := doc.DataTo(&app); err != nil {
+            return nil, err
         }
-        form.ID = doc.Ref.ID
-        forms = append(forms, form)
+        app.ID = doc.Ref.ID // Assign the Firestore document ID
+        applications = append(applications, app)
     }
 
-    return forms, nil 
+    return applications, nil
 }
-	
+
+func (r *Repository) FetchFormsByTaID(ctx context.Context, taID string) ([]models.Form, error) {
+	var forms []models.Form
+
+	query := r.client.Collection("forms").Where("uploaderID", "==", taID)
+	iter := query.Documents(ctx)
+
+	defer iter.Stop()
+
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		var form models.Form
+		if err := doc.DataTo(&form); err != nil {
+			return nil, err
+		}
+		form.ID = doc.Ref.ID
+		forms = append(forms, form)
+	}
+
+	return forms, nil
+}
+
 func (r *Repository) CreateTAApplication(ctx context.Context, application *models.TAApplication) error {
 	_, _, err := r.client.Collection("ta_applications").Add(ctx, application)
 	if err != nil {
