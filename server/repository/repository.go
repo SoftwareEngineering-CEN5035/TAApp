@@ -262,9 +262,9 @@ func (r *Repository) RemoveTAFromCourse(ctx context.Context, courseID string, ta
 	return nil
 }
 
-func (r *Repository) GetNewForms(ctx context.Context) ([]models.Form, error) {
+func (r *Repository) GetFormsByStatus(ctx context.Context, status string) ([]models.Form, error) {
 	var forms []models.Form
-	iter := r.client.Collection("forms").Where("status", "==", "New").Documents(ctx)
+	iter := r.client.Collection("forms").Where("status", "==", status).Documents(ctx)
 	defer iter.Stop()
 	for {
 		doc, err := iter.Next()
@@ -507,8 +507,8 @@ func (r *Repository) FetchFormsByTaID(ctx context.Context, taID string) ([]model
 	return forms, nil
 }
 
-func (r *Repository) CreateTAApplication(ctx context.Context, application *models.TAApplication) error {
-	_, _, err := r.client.Collection("ta_applications").Add(ctx, application)
+func (r *Repository) CreateTAApplication(ctx context.Context, application *models.Form) error {
+	_, _, err := r.client.Collection("forms").Add(ctx, application)
 	if err != nil {
 		log.Printf("Failed to create TA application: %v", err)
 		return err
@@ -516,8 +516,8 @@ func (r *Repository) CreateTAApplication(ctx context.Context, application *model
 	return nil
 }
 
-func (r *Repository) GetTAApplicationsByUserID(ctx context.Context, userID string) ([]models.TAApplication, error) {
-	var applications []models.TAApplication
+func (r *Repository) GetTAApplicationsByUserID(ctx context.Context, userID string) ([]models.Form, error) {
+	var applications []models.Form
 	iter := r.client.Collection("ta_applications").Where("userId", "==", userID).Documents(ctx)
 	defer iter.Stop()
 
@@ -530,7 +530,7 @@ func (r *Repository) GetTAApplicationsByUserID(ctx context.Context, userID strin
 			return nil, err
 		}
 
-		var app models.TAApplication
+		var app models.Form
 		if err := doc.DataTo(&app); err != nil {
 			return nil, err
 		}

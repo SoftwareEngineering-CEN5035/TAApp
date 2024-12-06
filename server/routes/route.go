@@ -21,9 +21,9 @@ func RegisterRoutes(e *echo.Echo, repo *repository.Repository, authClient *auth.
 		return department.CreateCourseHandler(c, repo, authClient)
 	})
 
-	e.POST("/courses", func(c echo.Context) error {
-		return department.CreateCourseHandler(c, repo, authClient)
-	})
+	// e.POST("/courses", func(c echo.Context) error {
+	// 	return department.CreateCourseHandler(c, repo, authClient)
+	// })
 	// e.POST("/CreateAccount", func(c echo.Context) error {
 	// 	return login.CreateAccount(c, repo, authClient)
 	// })
@@ -79,7 +79,7 @@ func RegisterRoutes(e *echo.Echo, repo *repository.Repository, authClient *auth.
 	e.GET("/users/:role", func(c echo.Context) error {
 		return course.GetUserByRole(c, repo, authClient)
 	})
-	e.GET("/forms/status", func(c echo.Context) error {
-        return ta.GetFormsByStatus(c, repo, authClient)
-    })
+	e.GET("/ta_applications/status", func(c echo.Context) error {
+		return ta.GetFormsByStatus(c, repo, authClient)
+	})
 }

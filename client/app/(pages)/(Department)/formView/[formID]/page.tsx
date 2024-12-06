@@ -5,7 +5,8 @@ import { useState, useEffect } from 'react';
 import { FaCheck } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
-import { getAuth, onAuthStateChanged } from "@firebase/auth";
+import { onAuthStateChanged } from "@firebase/auth";
+import { auth } from "../../../../_lib/firebase";
 import axios from 'axios';
 import { IoMdArrowBack } from "react-icons/io";
 
@@ -46,9 +47,8 @@ export default function FormView({ params }) {
     let [loading, setLoading] = useState<boolean>(false);
 
     let baseUrl = "http://localhost:9000";
-
+    
     useEffect(() => {
-        const auth = getAuth();
         const unsubscribe = onAuthStateChanged(auth, (user) => {
                 if (user) {
                     console.log("logged in");

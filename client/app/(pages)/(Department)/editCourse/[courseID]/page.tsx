@@ -1,7 +1,8 @@
 'use client';
 import axios, { AxiosResponse } from "axios";
 import Select from 'react-select';
-import { getAuth, onAuthStateChanged } from "@firebase/auth";
+import { onAuthStateChanged } from "@firebase/auth";
+import { auth } from "../../../../_lib/firebase";
 import { IoSaveOutline } from "react-icons/io5";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -47,7 +48,6 @@ export default function EditCourse({ params }){
     ]
 
     useEffect(() => {
-        const auth = getAuth();
         const unsubscribe = onAuthStateChanged(auth, (user) => {
                 if (user) {
                     console.log("logged in");
