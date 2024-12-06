@@ -203,3 +203,29 @@ func GetFormsByStatus(c echo.Context, repo *repository.Repository, authClient *a
 
 	return c.JSON(http.StatusOK, applications)
 }
+
+func GetFormsByUser(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
+	ctx := context.Background()
+
+	// Extract and validate token
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" || len(authHeader) <= 7 || authHeader[:7] != "Bearer " {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid Authorization header"})
+	}
+	tokenString := authHeader[7:]
+
+	token, err := authClient.VerifyIDToken(ctx, tokenString)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid token"})
+	}
+
+	uid := token.UID
+
+	// Fetch forms from the repository
+	forms, err := repo.FetchFormsByUploaderID(ctx, uid)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to fetch forms"})
+	}
+
+	return c.JSON(http.StatusOK, forms)
+}

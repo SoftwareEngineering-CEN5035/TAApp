@@ -262,6 +262,49 @@ func (r *Repository) RemoveTAFromCourse(ctx context.Context, courseID string, ta
 	return nil
 }
 
+func (r *Repository) GetFormsByStatus(ctx context.Context, status string) ([]models.Form, error) {
+	var forms []models.Form
+	iter := r.client.Collection("forms").Where("status", "==", status).Documents(ctx)
+	defer iter.Stop()
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			log.Printf("Error retrieving forms: %v", err)
+			return nil, err
+		}
+		var form models.Form
+		if err := doc.DataTo(&form); err != nil {
+			log.Printf("Error decoding form data: %v", err)
+			return nil, err
+		}
+		forms = append(forms, form)
+	}
+	return forms, nil
+}
+
+func (r *Repository) FetchFormsByUploaderID(ctx context.Context, uploaderID string) ([]models.Form, error) {
+	var forms []models.Form
+	iter := r.client.Collection("forms").Where("uploaderID", "==", uploaderID).Documents(ctx)
+	for {
+		doc, err := iter.Next()
+		if err != nil {
+			if err == iterator.Done {
+				break
+			}
+			return nil, err
+		}
+		var form models.Form
+		if err := doc.DataTo(&form); err != nil {
+			return nil, err
+		}
+		forms = append(forms, form)
+	}
+	return forms, nil
+}
+
 func (r *Repository) GetFormsPending(ctx context.Context) ([]models.Form, error) {
 	var forms []models.Form
 	iter := r.client.Collection("forms").Where("status", "in", []interface{}{"Pending Applicant Approval", "TA Rejected", "Accepted"}).Documents(ctx)
@@ -321,7 +364,10 @@ func (r *Repository) FetchFormById(ctx context.Context, formID string) (*models.
 
 	return &form, nil
 }
-
+func (r *Repository) UpdateFormStatus(ctx context.Context, form *models.Form) error {
+	_, err := r.client.Collection("forms").Doc(form.ID).Set(ctx, form)
+	return err
+}
 func (r *Repository) UpdateFormStatusToApproved(ctx context.Context, formID string) error {
 	query := r.client.Collection("forms").Where("id", "==", formID).Limit(1).Documents(ctx)
 	defer query.Stop()

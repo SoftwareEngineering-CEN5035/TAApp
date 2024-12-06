@@ -82,4 +82,8 @@ func RegisterRoutes(e *echo.Echo, repo *repository.Repository, authClient *auth.
 	e.GET("/ta_applications/status", func(c echo.Context) error {
 		return ta.GetFormsByStatus(c, repo, authClient)
 	})
+	e.GET("/ta_applications/user", func(c echo.Context) error {
+		return ta.GetFormsByUser(c, repo, authClient)
+	})
+
 }
