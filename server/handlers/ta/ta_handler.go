@@ -99,9 +99,8 @@ func UploadFileToS3(ctx context.Context, bucketName string, file multipart.File,
 
 	return "https://" + bucketName + ".s3.amazonaws.com/" + fileName, nil
 }
-
 func CreateTAApplication(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
-	fmt.Println("we startin shiii")
+	fmt.Println("Starting TA application creation")
 	ctx := context.Background()
 
 	// Validate token
@@ -117,24 +116,28 @@ func CreateTAApplication(c echo.Context, repo *repository.Repository, authClient
 	uid := token.UID
 
 	// Fetch user details
-
 	user, err := repo.FetchUserByUID(ctx, uid)
 	if err != nil || user.Role != "TA" {
 		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "User is not authorized to apply"})
 	}
-	fmt.Println("we gettin users n shiii")
+	fmt.Println("User validated")
 
 	// Read form values
 	hasPriorExperience := c.FormValue("hasPriorExperience") == "true"
 	preferredCourse := c.FormValue("preferredCourse")
+	courseName := c.FormValue("courseName") // New field for course name
 
+	if preferredCourse == "" || courseName == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Preferred course and course name are required"})
+	}
+	fmt.Println("this yo hsiii my boi?", hasPriorExperience, preferredCourse, courseName)
 	// Validate file upload
 	file, err := c.FormFile("file")
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "File is required"})
 	}
 	src, err := file.Open()
-	fmt.Println("we gettin files n shiii")
+	fmt.Println("Processing file upload")
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to open file"})
@@ -143,10 +146,10 @@ func CreateTAApplication(c echo.Context, repo *repository.Repository, authClient
 
 	// Generate a unique file name
 	fileID := uuid.New().String()
-	fileurlName := fileID + filepath.Ext(file.Filename)
-	fmt.Println("this yo filename?:", file.Filename)
+	fileURLName := fileID + filepath.Ext(file.Filename)
+
 	// Upload file to S3
-	fileURL, err := UploadFileToS3(ctx, "taapplication", src, fileurlName)
+	fileURL, err := UploadFileToS3(ctx, "taapplication", src, fileURLName)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to upload file to S3"})
 	}
@@ -158,9 +161,9 @@ func CreateTAApplication(c echo.Context, repo *repository.Repository, authClient
 		UploaderName:       user.Name,
 		PreviousExperience: hasPriorExperience,
 		CourseAppliedID:    preferredCourse,
+		CourseName:         courseName,
 		FileURL:            fileURL,
-		Status:             "Pending",
-		CourseName:         "placeholder",
+		Status:             "New",
 	}
 
 	if err := repo.CreateTAApplication(ctx, &application); err != nil {

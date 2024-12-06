@@ -41,7 +41,6 @@ const TAApplicationPage = () => {
 
     fetchCourses();
   }, [router]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -56,12 +55,18 @@ const TAApplicationPage = () => {
       const formDataToSend = new FormData();
       formDataToSend.append('hasPriorExperience', formData.hasPriorExperience);
       formDataToSend.append('preferredCourse', formData.preferredCourse);
-      formDataToSend.append('file', file, file.name); // Append the file along with its name
   
-      // Print the FormData contents to the console
-      for (let pair of formDataToSend.entries()) {
-        console.log(pair[0] + ': ' + pair[1]);
+      // Find the course name from the list of available courses
+      const course = availableCourses.find(
+        (course) => course.ID === formData.preferredCourse
+      );
+      if (!course) {
+        setError('Invalid course selected.');
+        return;
       }
+  
+      formDataToSend.append('courseName', course.Name); // Append the course name
+      formDataToSend.append('file', file, file.name); // Append the file
   
       const response = await fetch('http://localhost:9000/ta/application', {
         method: 'POST',
@@ -77,7 +82,8 @@ const TAApplicationPage = () => {
     } catch (err) {
       setError(err.message);
     }
-  };  
+  };
+  
 
   if (loading) return <div className="p-4">Loading...</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
