@@ -534,3 +534,24 @@ func (r *Repository) GetTAApplicationsByUserID(ctx context.Context, userID strin
 	}
 	return applications, nil
 }
+func (r *Repository) GetApplicationByID(ctx context.Context, id string) (*models.Form, error) {
+	doc, err := r.client.Collection("ta_applications").Doc(id).Get(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var application models.Form
+	if err := doc.DataTo(&application); err != nil {
+		return nil, err
+	}
+
+	return &application, nil
+}
+
+// UpdateApplicationStatus updates the status of an application
+func (r *Repository) UpdateApplicationStatus(ctx context.Context, id, status string) error {
+	_, err := r.client.Collection("ta_applications").Doc(id).Update(ctx, []firestore.Update{
+		{Path: "status", Value: status},
+	})
+	return err
+}

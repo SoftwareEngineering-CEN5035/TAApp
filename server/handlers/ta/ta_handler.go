@@ -229,3 +229,80 @@ func GetFormsByUser(c echo.Context, repo *repository.Repository, authClient *aut
 
 	return c.JSON(http.StatusOK, forms)
 }
+func GetApplicationByID(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
+	ctx := context.Background()
+
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" || len(authHeader) <= 7 || authHeader[:7] != "Bearer " {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid Authorization header"})
+	}
+
+	tokenString := authHeader[7:]
+	_, err := authClient.VerifyIDToken(ctx, tokenString)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid token"})
+	}
+
+	formID := c.Param("formId")
+	application, err := repo.GetApplicationByID(ctx, formID)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "Application not found"})
+	}
+
+	return c.JSON(http.StatusOK, application)
+}
+
+// UpdateApplicationStatus updates the status of a TA application
+func UpdateApplicationStatus(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
+	ctx := context.Background()
+
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" || len(authHeader) <= 7 || authHeader[:7] != "Bearer " {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid Authorization header"})
+	}
+
+	tokenString := authHeader[7:]
+	token, err := authClient.VerifyIDToken(ctx, tokenString)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid token"})
+	}
+
+	// Only allow status updates for applicants
+	uid := token.UID
+	user, err := repo.FetchUserByUID(ctx, uid)
+	if err != nil || user.Role != "TA" {
+		return c.JSON(http.StatusForbidden, map[string]string{"error": "User not authorized to update status"})
+	}
+
+	formID := c.Param("formId")
+
+	// Parse the new status from the request body
+	var updateData struct {
+		Status string `json:"status"`
+	}
+	if err := c.Bind(&updateData); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
+	}
+
+	// Validate the status
+	if updateData.Status != "Accepted" && updateData.Status != "TA Rejected" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid status"})
+	}
+
+	// Check current status
+	application, err := repo.GetApplicationByID(ctx, formID)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "Application not found"})
+	}
+
+	if application.Status != "Pending Applicant Approval" {
+		return c.JSON(http.StatusForbidden, map[string]string{"error": "Cannot update status for this application"})
+	}
+
+	// Update the status
+	if err := repo.UpdateApplicationStatus(ctx, formID, updateData.Status); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to update application status"})
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{"message": "Status updated successfully"})
+}
