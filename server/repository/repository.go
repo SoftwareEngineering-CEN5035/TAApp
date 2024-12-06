@@ -287,7 +287,7 @@ func (r *Repository) GetNewForms(ctx context.Context) ([]models.Form, error) {
 
 func (r *Repository) GetFormsPending(ctx context.Context) ([]models.Form, error) {
 	var forms []models.Form
-	iter := r.client.Collection("forms").Where("status", "in", []interface{}{"PPending Applicant Approval", "TA Rejected", "Accepted"}).Documents(ctx)
+	iter := r.client.Collection("forms").Where("status", "in", []interface{}{"Pending Applicant Approval", "TA Rejected", "Accepted"}).Documents(ctx)
 	defer iter.Stop()
 	for {
 		doc, err := iter.Next()
