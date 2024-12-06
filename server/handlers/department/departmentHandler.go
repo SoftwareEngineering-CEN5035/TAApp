@@ -134,7 +134,7 @@ func GetNewForms(c echo.Context, repo *repository.Repository, authClient *auth.C
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
 	}
 
-	formsList, err := repo.GetNewForms(ctx)
+	formsList, err := repo.GetFormsByStatus(ctx, "New")
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to retrieve forms"})
 	}

@@ -262,9 +262,9 @@ func (r *Repository) RemoveTAFromCourse(ctx context.Context, courseID string, ta
 	return nil
 }
 
-func (r *Repository) GetNewForms(ctx context.Context) ([]models.Form, error) {
+func (r *Repository) GetFormsByStatus(ctx context.Context, status string) ([]models.Form, error) {
 	var forms []models.Form
-	iter := r.client.Collection("forms").Where("status", "==", "New").Documents(ctx)
+	iter := r.client.Collection("forms").Where("status", "==", status).Documents(ctx)
 	defer iter.Stop()
 	for {
 		doc, err := iter.Next()
