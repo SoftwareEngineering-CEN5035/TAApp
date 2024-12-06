@@ -262,29 +262,6 @@ func (r *Repository) RemoveTAFromCourse(ctx context.Context, courseID string, ta
 	return nil
 }
 
-func (r *Repository) GetFormsByStatus(ctx context.Context, status string) ([]models.Form, error) {
-	var forms []models.Form
-	iter := r.client.Collection("forms").Where("status", "==", status).Documents(ctx)
-	defer iter.Stop()
-	for {
-		doc, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			log.Printf("Error retrieving forms: %v", err)
-			return nil, err
-		}
-		var form models.Form
-		if err := doc.DataTo(&form); err != nil {
-			log.Printf("Error decoding form data: %v", err)
-			return nil, err
-		}
-		forms = append(forms, form)
-	}
-	return forms, nil
-}
-
 func (r *Repository) GetFormsPending(ctx context.Context) ([]models.Form, error) {
 	var forms []models.Form
 	iter := r.client.Collection("forms").Where("status", "in", []interface{}{"Pending Applicant Approval", "TA Rejected", "Accepted"}).Documents(ctx)
@@ -453,30 +430,30 @@ func (r *Repository) FetchDepartmentFormsByTaID(ctx context.Context, taID string
 
 // GetTAApplicationsByStatus fetches TA applications filtered by status
 func (r *Repository) GetFormsByStatus(ctx context.Context, status string) ([]models.Form, error) {
-    var applications []models.Form
+	var applications []models.Form
 
-    // Query the 'ta_applications' collection where 'status' equals the provided status
-    iter := r.client.Collection("forms").Where("status", "==", status).Documents(ctx)
-    defer iter.Stop()
+	// Query the 'ta_applications' collection where 'status' equals the provided status
+	iter := r.client.Collection("forms").Where("status", "==", status).Documents(ctx)
+	defer iter.Stop()
 
-    for {
-        doc, err := iter.Next()
-        if err == iterator.Done {
-            break
-        }
-        if err != nil {
-            return nil, err
-        }
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
 
-        var app models.Form
-        if err := doc.DataTo(&app); err != nil {
-            return nil, err
-        }
-        app.ID = doc.Ref.ID // Assign the Firestore document ID
-        applications = append(applications, app)
-    }
+		var app models.Form
+		if err := doc.DataTo(&app); err != nil {
+			return nil, err
+		}
+		app.ID = doc.Ref.ID // Assign the Firestore document ID
+		applications = append(applications, app)
+	}
 
-    return applications, nil
+	return applications, nil
 }
 
 func (r *Repository) FetchFormsByTaID(ctx context.Context, taID string) ([]models.Form, error) {
