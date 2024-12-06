@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ToastContainer, toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
-import InstructorNavbar from "../navbars/InstructorNavbar"; // Adjust the path based on your file structure
+//import InstructorNavbar from "../navbars/InstructorNavbar"; // Adjust the path based on your file structure
 
 const InstructorDashboardPage = () => {
   const router = useRouter();
