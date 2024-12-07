@@ -352,22 +352,27 @@ func (r *Repository) GetAllCourses(ctx context.Context) ([]models.Course, error)
 }
 
 func (r *Repository) FetchFormById(ctx context.Context, formID string) (*models.Form, error) {
-	iter := r.client.Collection("forms").Where("id", "==", formID).Limit(1).Documents(ctx)
-	doc, err := iter.Next()
+	docRef := r.client.Collection("forms").Doc(formID) // Replace with your document ID
+	doc, err := docRef.Get(ctx)                        // Retrieve the document snapshot
 	if err != nil {
-		return nil, err
-	}
-	var form models.Form
-	if err := doc.DataTo(&form); err != nil {
+		fmt.Println("Error retrieving document:", err)
 		return nil, err
 	}
 
-	return &form, nil
+	var application models.Form
+	if err := doc.DataTo(&application); err != nil {
+		fmt.Println("Error mapping document data:", err)
+		return nil, err
+	}
+
+	return &application, nil
 }
-func (r *Repository) UpdateFormStatus(ctx context.Context, form *models.Form) error {
-	_, err := r.client.Collection("forms").Doc(form.ID).Set(ctx, form)
-	return err
-}
+
+// func (r *Repository) UpdateFormStatus(ctx context.Context, form *models.Form) error {
+// 	_, err := r.client.Collection("forms").Doc(form.ID).Set(ctx, form)
+// 	return err
+// }
+
 func (r *Repository) UpdateFormStatusToApproved(ctx context.Context, formID string) error {
 	query := r.client.Collection("forms").Where("id", "==", formID).Limit(1).Documents(ctx)
 	defer query.Stop()
@@ -391,6 +396,39 @@ func (r *Repository) UpdateFormStatusToApproved(ctx context.Context, formID stri
 	}
 
 	log.Printf("Successfully updated form status to Approved for ID %s", formID)
+	return nil
+}
+
+// UpdateFormStatus updates the status of a form identified by formID to newStatus.
+func (r *Repository) UpdateFormStatus(ctx context.Context, formID string, newStatus string) error {
+	// Reference to the specific document in the "forms" collection
+	docRef := r.client.Collection("forms").Doc(formID)
+
+	// Attempt to get the document to ensure it exists
+	docSnapshot, err := docRef.Get(ctx)
+	if err != nil {
+		// For other errors, log and return
+		log.Printf("Error fetching form with ID %s: %v", formID, err)
+		return err
+	}
+
+	// Optional: Log the current status before update
+	var currentStatus string
+	if err := docSnapshot.DataTo(&currentStatus); err != nil {
+		log.Printf("Error retrieving current status for form ID %s: %v", formID, err)
+		// Proceeding with the update even if current status retrieval fails
+	}
+
+	// Perform the update operation
+	_, err = docRef.Update(ctx, []firestore.Update{
+		{Path: "status", Value: newStatus},
+	})
+	if err != nil {
+		log.Printf("Failed to update form status for ID %s: %v", formID, err)
+		return err
+	}
+
+	log.Printf("Successfully updated form status to '%s' for ID %s", newStatus, formID)
 	return nil
 }
 
@@ -468,6 +506,35 @@ func (r *Repository) FetchDepartmentFormsByTaID(ctx context.Context, taID string
 		if err := doc.DataTo(&form); err != nil {
 			return nil, err
 		}
+		forms = append(forms, form)
+	}
+
+	return forms, nil
+}
+
+func (r *Repository) FetchFormsByStatus(ctx context.Context, status string) ([]models.Form, error) {
+	var forms []models.Form
+
+	// Update the query to filter by "Status" instead of "uploaderID"
+	query := r.client.Collection("forms").Where("status", "==", status)
+	iter := query.Documents(ctx)
+
+	defer iter.Stop()
+
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		var form models.Form
+		if err := doc.DataTo(&form); err != nil {
+			return nil, err
+		}
+		form.ID = doc.Ref.ID
 		forms = append(forms, form)
 	}
 

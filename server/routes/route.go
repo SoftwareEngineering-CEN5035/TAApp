@@ -6,6 +6,7 @@ import (
 	"ta-manager-api/handlers/department"
 	"ta-manager-api/handlers/login"
 	"ta-manager-api/handlers/ta"
+	"ta-manager-api/handlers/committee"
 	"ta-manager-api/repository"
 
 	"firebase.google.com/go/auth"
@@ -73,6 +74,9 @@ func RegisterRoutes(e *echo.Echo, repo *repository.Repository, authClient *auth.
 	e.GET("/forms/:id", func(c echo.Context) error {
 		return department.GetFormById(c, repo, authClient)
 	})
+	e.PATCH("/forms/:id", func(c echo.Context) error {
+		return committee.UpdateFormStatus(c, repo, authClient)
+	})
 	e.GET("/formsByTa/:id", func(c echo.Context) error {
 		return department.GetFormsByTA(c, repo, authClient)
 	})
@@ -90,6 +94,9 @@ func RegisterRoutes(e *echo.Echo, repo *repository.Repository, authClient *auth.
 	})
 	e.PATCH("/ta_applications/:formId", func(c echo.Context) error {
 		return ta.UpdateApplicationStatus(c, repo, authClient)
+	})
+	e.GET("/forms/status", func(c echo.Context) error {
+		return committee.GetCommitteeFormsByStatus(c, repo, authClient)
 	})
 
 }

@@ -181,6 +181,7 @@ func GetFormById(c echo.Context, repo *repository.Repository, authClient *auth.C
 	}
 
 	formID := c.Param("id")
+	fmt.Println("parm test", formID)
 	if formID == "" {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Form ID is required"})
 	}
