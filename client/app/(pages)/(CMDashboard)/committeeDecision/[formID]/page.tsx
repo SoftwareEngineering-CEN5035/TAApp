@@ -1,6 +1,3 @@
-
-
-
 'use client';
 import axios, { AxiosResponse } from "axios";
 import Select, { SingleValue } from 'react-select';
@@ -48,8 +45,8 @@ export default function CommitteeDecision({ params }: CommitteeDecisionProps) {
 
     // Status options for the dropdown
     const statusOptions: SelectOption[] = [
-        { value: 'Approve', label: 'Approve' },
-        { value: 'Decline', label: 'Decline' }
+        { value: 'Pending Applicant Approval', label: 'Approve' },
+        { value: 'Rejected', label: 'Decline' }
     ];
 
     // Authentication check
@@ -115,7 +112,7 @@ export default function CommitteeDecision({ params }: CommitteeDecisionProps) {
             }).then((res: AxiosResponse) => {
                 console.log('Status updated successfully:', res.data);
                 alert('Status updated successfully!');
-                router.push(`/departmentDashboard/course`);
+                router.push(`/committeeDashboard/applications`);
             });
         } catch (error) {
             console.error('Error updating status:', error);
