@@ -53,7 +53,7 @@ const NewUserWelcome = () => {
                   router.push("/InstructorDashboard");
                   break;
                 case "Committee":
-                  router.push("/committeeDashboard");
+                  router.push("/committeeDashboard/applications");
                   break;
                 case "Department":
                   router.push("/departmentDashboard/course");
@@ -114,7 +114,7 @@ const NewUserWelcome = () => {
           router.push("/instructorDashboard");
           break;
         case "Committee":
-          router.push("/committeedashboard");
+          router.push("/committeeDashboard/applications");
           break;
         // Add more roles here as needed
         default:
