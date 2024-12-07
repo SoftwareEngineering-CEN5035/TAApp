@@ -25,12 +25,19 @@ type TA = {
 };
 
 const TAManagementPage = () => {
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [taDetails, setTaDetails] = useState<{ [key: string]: string }>({});
+  const [courses, setCourses] = useState<Course[]>([]); // Store courses for the instructor
+  const [taDetails, setTaDetails] = useState<{ [key: string]: string }>({}); // Map TA IDs to Names
   const [allTAs, setAllTAs] = useState<TA[]>([]); // Store full list of TAs
   const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState<string | null>(null); // Store logged-in user's name
 
   const baseUrl = 'http://localhost:9000';
+
+  // Set logged-in instructor's name
+  useEffect(() => {
+    const loggedInUserName = localStorage.getItem("userName");
+    setUserName(loggedInUserName); // Set the logged-in instructor's name
+  }, []);
 
   // Fetch TA Details and map TA IDs to Names
   const fetchTAs = async () => {
@@ -62,7 +69,7 @@ const TAManagementPage = () => {
     }
   };
 
-  // Fetch Instructor Courses and map TA IDs to Names
+  // Fetch Instructor's Courses and filter by the logged-in instructor's name
   const fetchInstructorCourses = async () => {
     try {
       setLoading(true);
@@ -72,8 +79,11 @@ const TAManagementPage = () => {
 
       console.log('Courses Response:', response.data);
 
+      // Filter courses by the logged-in instructor's name
+      const instructorCourses = response.data.filter((course: Course) => course.InstructorName === userName);
+
       // Map TA IDs in each course's TaList to their Names using taDetails
-      const populatedCourses = response.data.map((course: Course) => {
+      const populatedCourses = instructorCourses.map((course: Course) => {
         const taNames = course.TaList.map(
           (taId) => taDetails[taId] || `${taId}` // Add TA ID for debugging if the name is missing
         );
@@ -136,10 +146,15 @@ const TAManagementPage = () => {
   }, []);
 
   useEffect(() => {
-    if (Object.keys(taDetails).length > 0) {
+    if (userName && Object.keys(taDetails).length > 0) {
       fetchInstructorCourses();
     }
-  }, [taDetails]);
+  }, [taDetails, userName]);
+
+  // Filter and display TAs associated with courses for the instructor
+  const filteredTAs = allTAs.filter((ta) =>
+    courses.some((course) => course.TaList.includes(ta.Name))
+  );
 
   return (
     <div className="ta-management min-h-screen w-screen bg-gradient-to-br from-indigo-50 to-indigo-200 flex flex-col items-center">
@@ -147,76 +162,75 @@ const TAManagementPage = () => {
       <InstructorNavbar selectedPage="taManagement" setSelectedPage={() => {}} />
 
       {/* Title */}
-      <br></br>
+      <br />
       <h2 className="text-3xl font-bold text-blue-800 mb-6">TA Management</h2>
 
       {/* Description */}
       <p className="text-xl text-white text-center mb-6 max-w-xl">
-        This page allows instructors to view and manage Teaching Assistants assigned to their courses. You can also view
-        all available TAs below.
+        This page allows instructors to view and manage Teaching Assistants assigned to their courses.
+        You can also view all available TAs below.
       </p>
 
       {/* Loader */}
       {loading ? (
         <p className="text-xl text-white mt-10">Loading data...</p>
       ) : (
-    <div className="overflow-x-auto">
-      <div className="max-h-[60rem] overflow-y-auto"> {/* Increased max height to 40rem (640px) */}
-        <table className="table-auto w-full bg-white shadow-xl rounded-md">
-          <thead>
-            <tr className="bg-indigo-500 text-white">
-              <th className="px-6 py-4 text-lg">TA Name</th>
-              <th className="px-6 py-4 text-lg">Email</th>
-              <th className="px-6 py-4 text-lg">Role</th>
-              <th className="px-6 py-4 text-lg">Rating</th>
-              <th className="px-6 py-4 text-lg">Comment</th>
-              <th className="px-6 py-4 text-lg">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {allTAs.map((ta) => (
-              <tr key={ta.ID} className="border-t hover:bg-indigo-50 transition-all duration-200">
-                <td className="px-6 py-4 text-center text-sm text-gray-700">{ta.Name}</td>
-                <td className="px-6 py-4 text-center text-sm text-gray-700">{ta.Email}</td>
-                <td className="px-6 py-4 text-center text-sm text-gray-700">{ta.Role}</td>
-                <td className="px-6 py-4 text-center text-sm text-gray-700">
-                  <select
-                    value={ta.Rating}
-                    onChange={(e) => handleRatingChange(ta.ID, e.target.value)}
-                    className="border border-gray-300 rounded-md px-3 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  >
-                    <option value="Not Rated">Not Rated</option>
-                    <option value="Excellent">Excellent</option>
-                    <option value="Good">Good</option>
-                    <option value="Average">Average</option>
-                    <option value="Below Average">Below Average</option>
-                    <option value="Poor">Poor</option>
-                  </select>
-                </td>
-                <td className="px-6 py-4 text-center text-sm text-gray-700">
-                  <textarea
-                    value={ta.Comment || ''}
-                    onChange={(e) => handleCommentChange(ta.ID, e.target.value)}
-                    className="border border-gray-300 rounded-md px-3 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
-                    placeholder="Leave a comment"
-                  />
-                </td>
-                <td className="px-6 py-4 text-center text-sm text-gray-700">
-                  <button
-                    onClick={() => saveFeedback(ta.ID)}
-                    className="bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600"
-                  >
-                    Save Feedback
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-
+        <div className="overflow-x-auto">
+          <div className="max-h-[60rem] overflow-y-auto">
+            {/* Increased max height to 60rem (960px) */}
+            <table className="table-auto w-full bg-white shadow-xl rounded-md">
+              <thead>
+                <tr className="bg-indigo-500 text-white">
+                  <th className="px-6 py-4 text-lg">TA Name</th>
+                  <th className="px-6 py-4 text-lg">Email</th>
+                  <th className="px-6 py-4 text-lg">Role</th>
+                  <th className="px-6 py-4 text-lg">Rating</th>
+                  <th className="px-6 py-4 text-lg">Comment</th>
+                  <th className="px-6 py-4 text-lg">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredTAs.map((ta) => (
+                  <tr key={ta.ID} className="border-t hover:bg-indigo-50 transition-all duration-200">
+                    <td className="px-6 py-4 text-center text-sm text-gray-700">{ta.Name}</td>
+                    <td className="px-6 py-4 text-center text-sm text-gray-700">{ta.Email}</td>
+                    <td className="px-6 py-4 text-center text-sm text-gray-700">{ta.Role}</td>
+                    <td className="px-6 py-4 text-center text-sm text-gray-700">
+                      <select
+                        value={ta.Rating}
+                        onChange={(e) => handleRatingChange(ta.ID, e.target.value)}
+                        className="border border-gray-300 rounded-md px-3 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        <option value="Not Rated">Not Rated</option>
+                        <option value="Excellent">Excellent</option>
+                        <option value="Good">Good</option>
+                        <option value="Average">Average</option>
+                        <option value="Below Average">Below Average</option>
+                        <option value="Poor">Poor</option>
+                      </select>
+                    </td>
+                    <td className="px-6 py-4 text-center text-sm text-gray-700">
+                      <textarea
+                        value={ta.Comment || ''}
+                        onChange={(e) => handleCommentChange(ta.ID, e.target.value)}
+                        className="border border-gray-300 rounded-md px-3 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
+                        placeholder="Leave a comment"
+                      />
+                    </td>
+                    <td className="px-6 py-4 text-center text-sm text-gray-700">
+                      <button
+                        onClick={() => saveFeedback(ta.ID)}
+                        className="bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600"
+                      >
+                        Save Feedback
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
 
       {/* Toastify */}

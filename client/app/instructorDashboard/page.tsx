@@ -11,7 +11,6 @@ type Course = {
   Name: string;
   Type: string;
   InstructorName: string;
-  
   ApplicationStatus: string;
   TaList: Array<string>;
 };
@@ -185,6 +184,29 @@ const InstructorDashboardPage = () => {
                 Next
               </button>
             </div>
+
+            {/* TA Management Section */}
+            {selectedPage === "taManagement" && (
+              <div className="mt-10">
+                <h2 className="text-2xl font-bold text-blue-800 mb-4">
+                  TA Management
+                </h2>
+
+                {/* List TA(s) for the current instructor */}
+                <ul className="list-disc pl-6">
+                  {filteredCourses
+                    .flatMap((course) =>
+                      course.TaList
+                        .filter((ta) => course.InstructorName === userName)
+                        .map((ta, index) => (
+                          <li key={index} className="text-lg text-gray-700">
+                            {ta}
+                          </li>
+                        ))
+                    )}
+                </ul>
+              </div>
+            )}
           </>
         )}
       </main>
