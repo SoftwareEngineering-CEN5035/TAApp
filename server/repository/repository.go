@@ -351,6 +351,19 @@ func (r *Repository) GetAllCourses(ctx context.Context) ([]models.Course, error)
 	return courses, nil
 }
 
+func (r *Repository) FetchFormByDocID(ctx context.Context, formID string) (*models.Form, error) {
+	iter := r.client.Collection("forms").Where("id", "==", formID).Limit(1).Documents(ctx)
+	doc, err := iter.Next()
+	if err != nil {
+		return nil, err
+	}
+	var form models.Form
+	if err := doc.DataTo(&form); err != nil {
+		return nil, err
+	}
+
+	return &form, nil
+}
 func (r *Repository) FetchFormById(ctx context.Context, formID string) (*models.Form, error) {
 	docRef := r.client.Collection("forms").Doc(formID) // Replace with your document ID
 	doc, err := docRef.Get(ctx)                        // Retrieve the document snapshot
