@@ -2,11 +2,11 @@
 package routes
 
 import (
+	"ta-manager-api/handlers/committee"
 	"ta-manager-api/handlers/course"
 	"ta-manager-api/handlers/department"
 	"ta-manager-api/handlers/login"
 	"ta-manager-api/handlers/ta"
-	"ta-manager-api/handlers/committee"
 	"ta-manager-api/repository"
 
 	"firebase.google.com/go/auth"
@@ -73,6 +73,9 @@ func RegisterRoutes(e *echo.Echo, repo *repository.Repository, authClient *auth.
 	})
 	e.GET("/forms/:id", func(c echo.Context) error {
 		return department.GetFormById(c, repo, authClient)
+	})
+	e.GET("/form/:id", func(c echo.Context) error {
+		return department.GetFormDocById(c, repo, authClient)
 	})
 	e.PATCH("/forms/:id", func(c echo.Context) error {
 		return committee.UpdateFormStatus(c, repo, authClient)

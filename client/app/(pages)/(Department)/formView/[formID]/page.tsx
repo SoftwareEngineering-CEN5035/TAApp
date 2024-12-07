@@ -63,11 +63,12 @@ export default function FormView({ params }) {
     const fetchFormById = async () => {
         try {
             setLoading(true)
-          const response = await axios.get(`${baseUrl}/forms/${formId}`, {
+          const response = await axios.get(`${baseUrl}/form/${formId}`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("Token")}`,
             },
           });
+          console.log(response.data)
           setForm(response.data);
         } catch (error) {
           console.error("Error fetching courses:", error);
@@ -142,7 +143,7 @@ export default function FormView({ params }) {
                 </div>
                 <div className="flex flex-row border-t border-t-[#d0dbe7] py-5 gap-x-4 max-[500px]:gap-x-14">
                     <p className="text-[#4e7297] text-sm font-normal leading-normal w-[10vw] max-[500px]:w-[25vw] max-[500px]:text-lg">Has Previous Experience?</p>
-                    <p className="text-[#0e141b] text-sm font-normal leading-normal max-[500px]:text-lg">{form?.PreviousExperience ?? false}</p>
+                    <p className="text-[#0e141b] text-sm font-normal leading-normal max-[500px]:text-lg">  {form?.PreviousExperience !== undefined && form?.PreviousExperience !== null ? String(form.PreviousExperience) : "false"}                    </p>
                 </div>
                 <div className="flex flex-row border-t border-t-[#d0dbe7] py-5 gap-x-4 max-[500px]:gap-x-14">
                     <p className="text-[#4e7297] text-sm font-normal leading-normal w-[10vw] max-[500px]:w-[25vw] max-[500px]:text-lg">Resume</p>
