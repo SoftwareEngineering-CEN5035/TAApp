@@ -193,6 +193,32 @@ func GetFormById(c echo.Context, repo *repository.Repository, authClient *auth.C
 
 	return c.JSON(http.StatusOK, form)
 }
+func GetFormDocById(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
+	ctx := context.Background()
+
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Missing Authorization header"})
+	}
+	tokenString := authHeader[len("Bearer "):]
+	isAuth, authMessage := AuthUser(ctx, tokenString, repo, authClient)
+
+	if !isAuth {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": authMessage})
+	}
+
+	formID := c.Param("id")
+	if formID == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Form ID is required"})
+	}
+	fmt.Println(formID)
+	form, err := repo.FetchFormByDocID(ctx, formID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Form not found"})
+	}
+	fmt.Println("this yo form?", form)
+	return c.JSON(http.StatusOK, form)
+}
 
 // Changes form status to approved, and adds TA to the course
 func ApproveTaForCourse(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
