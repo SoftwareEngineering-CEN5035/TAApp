@@ -23,13 +23,13 @@ const Login = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       const data = await response.json();
-  
+
       if (data.isAccountMade) {
         // Store the role in localStorage
         localStorage.setItem("role", data.role);
-        
+
         // Redirect based on user role
         switch (data.role) {
           case "TA":
@@ -77,7 +77,7 @@ const Login = () => {
       localStorage.setItem("Token", token);
       await loginUser(token);
     } catch (error) {
-      console.log('Error', error);
+      console.log("Error", error);
       toast.error(error.message);
     }
   };
