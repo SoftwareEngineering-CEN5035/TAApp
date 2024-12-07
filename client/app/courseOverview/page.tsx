@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import InstructorNavbar from '../(pages)/(Department)/navbars/instructorNavbar';
+import InstructorNavbar from "../(pages)/(Department)/navbars/instructorNavbar"; // Adjust the path if needed
 
 type Course = {
   ID: string;
@@ -52,7 +52,7 @@ const CoursesPage = () => {
       <InstructorNavbar selectedPage="coursesPage" setSelectedPage={() => {}} />
 
       {/* Title */}
-      <br></br>
+      <br />
       <h2 className="text-3xl font-bold text-blue-800 mb-6">Courses</h2>
 
       {/* Description */}
@@ -65,32 +65,34 @@ const CoursesPage = () => {
         <p className="text-xl text-white mt-10">Loading courses...</p>
       ) : (
         <div className="mt-10 w-full max-w-6xl overflow-x-auto">
-          <table className="table-auto w-full bg-white shadow-xl rounded-md">
-            <thead>
-              <tr className="bg-indigo-500 text-white">
-                <th className="px-6 py-4 text-lg">Course Name</th>
-                <th className="px-6 py-4 text-lg">TAs Assigned</th>
-                <th className="px-6 py-4 text-lg">Professor</th>
-              </tr>
-            </thead>
-            <tbody>
-              {courses.map((course) => (
-                <tr key={course.ID} className="border-t hover:bg-indigo-50 transition-all duration-200">
-                  <td className="px-6 py-4 text-center text-sm text-gray-700">{course.Name}</td>
-                  <td className="px-6 py-4 text-center text-sm text-gray-700">
-                    {course.TaList && course.TaList.length > 0 ? (
-                      course.TaList.map((taId, index) => (
-                        <div key={index}>{taId}</div> // Render TA IDs (replace with names if needed)
-                      ))
-                    ) : (
-                      <span>No TAs assigned</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-center text-sm text-gray-700">{course.InstructorName}</td>
+          <div className="max-h-[60rem] overflow-y-auto"> {/* Added scrollable container */}
+            <table className="table-auto w-full bg-white shadow-xl rounded-md">
+              <thead>
+                <tr className="bg-indigo-500 text-white">
+                  <th className="px-6 py-4 text-lg">Course Name</th>
+                  <th className="px-6 py-4 text-lg">TAs Assigned</th>
+                  <th className="px-6 py-4 text-lg">Professor</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {courses.map((course) => (
+                  <tr key={course.ID} className="border-t hover:bg-indigo-50 transition-all duration-200">
+                    <td className="px-6 py-4 text-center text-sm text-gray-700">{course.Name}</td>
+                    <td className="px-6 py-4 text-center text-sm text-gray-700">
+                      {course.TaList && course.TaList.length > 0 ? (
+                        course.TaList.map((taId, index) => (
+                          <div key={index}>{taId}</div> // Render TA IDs (replace with names if needed)
+                        ))
+                      ) : (
+                        <span>No TAs assigned</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-center text-sm text-gray-700">{course.InstructorName}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
