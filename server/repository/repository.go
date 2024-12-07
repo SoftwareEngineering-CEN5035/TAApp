@@ -578,32 +578,17 @@ func (r *Repository) CreateTAApplication(ctx context.Context, application *model
 	return nil
 }
 
-func (r *Repository) GetTAApplicationsByUserID(ctx context.Context, userID string) ([]models.Form, error) {
-	var applications []models.Form
-	iter := r.client.Collection("ta_applications").Where("userId", "==", userID).Documents(ctx)
-	defer iter.Stop()
-
-	for {
-		doc, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			return nil, err
-		}
-
-		var app models.Form
-		if err := doc.DataTo(&app); err != nil {
-			return nil, err
-		}
-		app.ID = doc.Ref.ID
-		applications = append(applications, app)
-	}
-	return applications, nil
-}
 func (r *Repository) GetApplicationByID(ctx context.Context, id string) (*models.Form, error) {
-	doc, err := r.client.Collection("ta_applications").Doc(id).Get(ctx)
+	fmt.Println("this yo mf id bum?:", id)
+
+	iter := r.client.Collection("forms").Where("id", "==", id).Limit(1).Documents(ctx)
+	doc, err := iter.Next() // Fetch the next document in the iterator
 	if err != nil {
+		if err == iterator.Done {
+			fmt.Println("No matching document found")
+			return nil, nil
+		}
+		fmt.Println(err)
 		return nil, err
 	}
 
@@ -613,12 +598,37 @@ func (r *Repository) GetApplicationByID(ctx context.Context, id string) (*models
 	}
 
 	return &application, nil
+
 }
 
 // UpdateApplicationStatus updates the status of an application
 func (r *Repository) UpdateApplicationStatus(ctx context.Context, id, status string) error {
-	_, err := r.client.Collection("ta_applications").Doc(id).Update(ctx, []firestore.Update{
-		{Path: "status", Value: status},
+	fmt.Println("Updating status for ID:", id)
+
+	// Query for the document where `id` matches
+	iter := r.client.Collection("forms").Where("id", "==", id).Limit(1).Documents(ctx)
+	doc, err := iter.Next() // Fetch the first document in the iterator
+	if err != nil {
+		if err == iterator.Done {
+			fmt.Println("No matching document found")
+			return nil // No document found; nothing to update
+		}
+		fmt.Println("Error fetching document:", err)
+		return err
+	}
+
+	// Update the status field
+	_, err = doc.Ref.Update(ctx, []firestore.Update{
+		{
+			Path:  "status", // The field you want to update
+			Value: status,   // The new value for the field
+		},
 	})
-	return err
+	if err != nil {
+		fmt.Println("Error updating document status:", err)
+		return err
+	}
+
+	fmt.Println("Status updated successfully for ID:", id)
+	return nil
 }

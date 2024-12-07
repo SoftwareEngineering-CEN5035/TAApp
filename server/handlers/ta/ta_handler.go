@@ -230,6 +230,7 @@ func GetFormsByUser(c echo.Context, repo *repository.Repository, authClient *aut
 	return c.JSON(http.StatusOK, forms)
 }
 func GetApplicationByID(c echo.Context, repo *repository.Repository, authClient *auth.Client) error {
+	fmt.Println("we booming shiii")
 	ctx := context.Background()
 
 	authHeader := c.Request().Header.Get("Authorization")
@@ -283,24 +284,28 @@ func UpdateApplicationStatus(c echo.Context, repo *repository.Repository, authCl
 	if err := c.Bind(&updateData); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 	}
-
 	// Validate the status
 	if updateData.Status != "Accepted" && updateData.Status != "TA Rejected" {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid status"})
 	}
 
+	fmt.Println(updateData.Status)
+
 	// Check current status
 	application, err := repo.GetApplicationByID(ctx, formID)
 	if err != nil {
+		fmt.Println("this yo error1", err)
+
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "Application not found"})
 	}
 
 	if application.Status != "Pending Applicant Approval" {
 		return c.JSON(http.StatusForbidden, map[string]string{"error": "Cannot update status for this application"})
 	}
-
+	fmt.Println(application)
 	// Update the status
 	if err := repo.UpdateApplicationStatus(ctx, formID, updateData.Status); err != nil {
+		fmt.Println("this yo error", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to update application status"})
 	}
 
